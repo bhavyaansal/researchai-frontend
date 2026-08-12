@@ -8,7 +8,7 @@ import '../models/job_model.dart';
 /// "localhost" — some Windows setups resolve localhost slowly or not
 /// at all for loopback sockets opened by uvicorn.
 class ApiService {
-  static const String baseUrl = 'http://127.0.0.1:8000';
+  static const String baseUrl = 'https://researchai-backend-75ow.onrender.com';
 
   final String token;
   late final Dio _dio;
@@ -143,4 +143,4 @@ class ApiService {
     });
     return Map<String, dynamic>.from(response.data);
   }
-}
+}
