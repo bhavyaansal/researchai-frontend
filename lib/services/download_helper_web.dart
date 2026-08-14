@@ -2,7 +2,7 @@
 import 'dart:html' as html;
 import 'dart:convert';
 
-void saveFile(String filename, String content) {
+Future<void> saveFile(String filename, String content) async {
   final bytes = utf8.encode(content);
   final blob = html.Blob([bytes]);
   final url = html.Url.createObjectUrlFromBlob(blob);
@@ -11,3 +11,4 @@ void saveFile(String filename, String content) {
     ..click();
   html.Url.revokeObjectUrl(url);
 }
+
