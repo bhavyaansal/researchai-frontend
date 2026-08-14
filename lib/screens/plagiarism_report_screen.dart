@@ -159,10 +159,340 @@ class _PlagiarismReportScreenState extends State<PlagiarismReportScreen>
     final months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
     final formattedDate = '${months[jobDate.month - 1]} ${jobDate.day}, ${jobDate.year}';
 
+
+    final isMobile = MediaQuery.of(context).size.width < 800;
+
+    final gaugeCard = GlassCard(
+      padding: EdgeInsets.symmetric(
+        horizontal: isMobile ? 20 : 32,
+        vertical: 20,
+      ),
+      child: AnimatedBuilder(
+        animation: _gaugeAnimation,
+        builder: (context, child) {
+          final score = _gaugeAnimation.value;
+          final percent = (score * 100).round();
+          final color = AppColors.scoreColor(score * 100);
+
+          return Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SizedBox(
+                width: isMobile ? 80 : 100,
+                height: isMobile ? 80 : 100,
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    CircularProgressIndicator(
+                      value: score,
+                      strokeWidth: isMobile ? 8 : 10,
+                      backgroundColor: AppColors.borderSubtle(context),
+                      valueColor: AlwaysStoppedAnimation<Color>(color),
+                    ),
+                    Text(
+                      '$percent%',
+                      style: TextStyle(
+                        color: AppColors.textPrimary(context),
+                        fontSize: isMobile ? 20 : 24,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(width: isMobile ? 16 : 24),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Similarity Index',
+                    style: TextStyle(
+                      color: AppColors.textSecondary(context),
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: color.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(AppRadius.pill),
+                      border: Border.all(color: color.withValues(alpha: 0.4)),
+                    ),
+                    child: Text(
+                      percent <= 10
+                          ? 'Low Similarity'
+                          : percent <= 30
+                              ? 'Moderate Risk'
+                              : 'High Plagiarism',
+                      style: TextStyle(
+                        color: color,
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          );
+        },
+      ),
+    );
+
+    final miniStatsSection = isMobile
+        ? Column(
+            children: [
+              _buildMiniStatCard(
+                context,
+                title: 'Flagged Segments',
+                value: '$flaggedCount',
+                icon: Icons.flag_rounded,
+                iconColor: AppColors.accentRed(context),
+              ),
+              const SizedBox(height: 10),
+              _buildMiniStatCard(
+                context,
+                title: 'Resolved',
+                value: '$resolvedCount',
+                icon: Icons.check_circle_rounded,
+                iconColor: AppColors.accentGreen(context),
+              ),
+              const SizedBox(height: 10),
+              _buildMiniStatCard(
+                context,
+                title: 'Scan Date',
+                value: formattedDate,
+                icon: Icons.calendar_today_rounded,
+                iconColor: AppColors.accentBlue(context),
+              ),
+            ],
+          )
+        : Row(
+            children: [
+              Expanded(
+                child: _buildMiniStatCard(
+                  context,
+                  title: 'Flagged Segments',
+                  value: '$flaggedCount',
+                  icon: Icons.flag_rounded,
+                  iconColor: AppColors.accentRed(context),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: _buildMiniStatCard(
+                  context,
+                  title: 'Resolved',
+                  value: '$resolvedCount',
+                  icon: Icons.check_circle_rounded,
+                  iconColor: AppColors.accentGreen(context),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: _buildMiniStatCard(
+                  context,
+                  title: 'Scan Date',
+                  value: formattedDate,
+                  icon: Icons.calendar_today_rounded,
+                  iconColor: AppColors.accentBlue(context),
+                ),
+              ),
+            ],
+          );
+
+    final leftDocumentViewerCard = GlassCard(
+      padding: EdgeInsets.all(isMobile ? 16 : 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (isMobile)
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Document Preview & Matches',
+                  style: TextStyle(
+                    color: AppColors.textPrimary(context),
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Wrap(
+                  spacing: 10,
+                  runSpacing: 6,
+                  children: [
+                    _buildLegendItem(context, 'Direct Match', AppColors.accentRed(context)),
+                    _buildLegendItem(context, 'Paraphrased', AppColors.accentOrange(context)),
+                    _buildLegendItem(context, 'Original', AppColors.textSecondary(context)),
+                  ],
+                ),
+              ],
+            )
+          else
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Document Preview & Highlighted Matches',
+                  style: TextStyle(
+                    color: AppColors.textPrimary(context),
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Row(
+                  children: [
+                    _buildLegendItem(context, 'Direct Match', AppColors.accentRed(context)),
+                    const SizedBox(width: 12),
+                    _buildLegendItem(context, 'Paraphrased', AppColors.accentOrange(context)),
+                    const SizedBox(width: 12),
+                    _buildLegendItem(context, 'Original', AppColors.textSecondary(context)),
+                  ],
+                ),
+              ],
+            ),
+          const SizedBox(height: 16),
+          const Divider(color: Color(0xFF252545)),
+          const SizedBox(height: 16),
+
+          // Document Interactive Text Viewer
+          Container(
+            constraints: const BoxConstraints(minHeight: 280),
+            padding: EdgeInsets.all(isMobile ? 12 : 18),
+            decoration: BoxDecoration(
+              color: AppColors.surfaceElevated(context).withValues(alpha: 0.5),
+              borderRadius: BorderRadius.circular(AppRadius.md),
+              border: Border.all(color: AppColors.borderSubtle(context)),
+            ),
+            child: SingleChildScrollView(
+              child: _buildHighlightedContent(context),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    final rightSourcesCard = GlassCard(
+      padding: EdgeInsets.all(isMobile ? 16 : 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                Icons.source_rounded,
+                color: AppColors.accentBlue(context),
+                size: 20,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                'Matching Sources',
+                style: TextStyle(
+                  color: AppColors.textPrimary(context),
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          const Divider(color: Color(0xFF252545)),
+          const SizedBox(height: 16),
+
+          if (_report!.uniqueSources.isEmpty) ...[
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 24),
+              child: Center(
+                child: Text(
+                  'No external sources detected.',
+                  style: TextStyle(color: Color(0xFF8888BB)),
+                ),
+              ),
+            ),
+          ] else ...[
+            ListView.separated(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: _report!.uniqueSources.length,
+              separatorBuilder: (_, _) => const SizedBox(height: 12),
+              itemBuilder: (context, index) {
+                final sourceTitle = _report!.uniqueSources[index];
+                final sourceSpans = _report!.flaggedSpans
+                    .where((s) => s.sourceTitle == sourceTitle)
+                    .toList();
+                final avgScore = sourceSpans.isNotEmpty
+                    ? sourceSpans.map((s) => s.similarityScore).reduce((a, b) => a + b) /
+                        sourceSpans.length
+                    : 0.5;
+
+                return Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: AppColors.surfaceElevated(context),
+                    borderRadius: BorderRadius.circular(AppRadius.md),
+                    border: Border.all(color: AppColors.borderSubtle(context)),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              sourceTitle,
+                              style: TextStyle(
+                                color: AppColors.textPrimary(context),
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: AppColors.scoreColor(avgScore * 100).withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(AppRadius.pill),
+                            ),
+                            child: Text(
+                              '${(avgScore * 100).toInt()}% match',
+                              style: TextStyle(
+                                color: AppColors.scoreColor(avgScore * 100),
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        '${sourceSpans.length} matched passage(s) found in document',
+                        style: TextStyle(
+                          color: AppColors.textSecondary(context),
+                          fontSize: 11,
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ],
+        ],
+      ),
+    );
+
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(32),
+        padding: EdgeInsets.all(isMobile ? 16 : 32),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -183,12 +513,15 @@ class _PlagiarismReportScreenState extends State<PlagiarismReportScreen>
                   ' / ',
                   style: TextStyle(color: AppColors.textTertiary(context), fontSize: 13),
                 ),
-                Text(
-                  _report!.filename,
-                  style: TextStyle(
-                    color: AppColors.textSecondary(context),
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
+                Expanded(
+                  child: Text(
+                    _report!.filename,
+                    style: TextStyle(
+                      color: AppColors.textSecondary(context),
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
                 Text(
@@ -208,261 +541,45 @@ class _PlagiarismReportScreenState extends State<PlagiarismReportScreen>
             const SizedBox(height: 20),
 
             // Top Summary Row (Circular Score Gauge + 3 Mini Stat Cards)
-            Row(
-              children: [
-                // Circular Gauge Glass Card
-                GlassCard(
-                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 20),
-                  child: AnimatedBuilder(
-                    animation: _gaugeAnimation,
-                    builder: (context, child) {
-                      final score = _gaugeAnimation.value;
-                      final percent = (score * 100).round();
-                      final color = AppColors.scoreColor(score * 100);
-
-                      return Row(
-                        children: [
-                          SizedBox(
-                            width: 100,
-                            height: 100,
-                            child: Stack(
-                              alignment: Alignment.center,
-                              children: [
-                                CircularProgressIndicator(
-                                  value: score,
-                                  strokeWidth: 10,
-                                  backgroundColor: AppColors.borderSubtle(context),
-                                  valueColor: AlwaysStoppedAnimation<Color>(color),
-                                ),
-                                Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Text(
-                                      '$percent%',
-                                      style: TextStyle(
-                                        color: AppColors.textPrimary(context),
-                                        fontSize: 24,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(width: 24),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                'Similarity Index',
-                                style: TextStyle(
-                                  color: AppColors.textSecondary(context),
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                decoration: BoxDecoration(
-                                  color: color.withValues(alpha: 0.15),
-                                  borderRadius: BorderRadius.circular(AppRadius.pill),
-                                  border: Border.all(color: color.withValues(alpha: 0.4)),
-                                ),
-                                child: Text(
-                                  percent <= 10
-                                      ? 'Low Similarity'
-                                      : percent <= 30
-                                          ? 'Moderate Risk'
-                                          : 'High Plagiarism',
-                                  style: TextStyle(
-                                    color: color,
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      );
-                    },
-                  ),
-                ),
-                const SizedBox(width: 20),
-
-                // 3 Mini Stat Cards
-                Expanded(
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: _buildMiniStatCard(
-                          context,
-                          title: 'Flagged Segments',
-                          value: '$flaggedCount',
-                          icon: Icons.flag_rounded,
-                          iconColor: AppColors.accentRed(context),
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: _buildMiniStatCard(
-                          context,
-                          title: 'Resolved',
-                          value: '$resolvedCount',
-                          icon: Icons.check_circle_rounded,
-                          iconColor: AppColors.accentGreen(context),
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: _buildMiniStatCard(
-                          context,
-                          title: 'Scan Date',
-                          value: formattedDate,
-                          icon: Icons.calendar_today_rounded,
-                          iconColor: AppColors.accentBlue(context),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 28),
+            if (isMobile)
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  gaugeCard,
+                  const SizedBox(height: 16),
+                  miniStatsSection,
+                ],
+              )
+            else
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  gaugeCard,
+                  const SizedBox(width: 20),
+                  Expanded(child: miniStatsSection),
+                ],
+              ),
+            const SizedBox(height: 24),
 
             // Two Column Area (Document Viewer Left + Sources Right)
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Left Column: Document Viewer with Inline Highlighting
-                Expanded(
-                  flex: 3,
-                  child: GlassCard(
-                    padding: const EdgeInsets.all(24),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              'Document Preview & Highlighted Matches',
-                              style: TextStyle(
-                                color: AppColors.textPrimary(context),
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            // Color Legend Top-Right
-                            Row(
-                              children: [
-                                _buildLegendItem(context, 'Direct Match', AppColors.accentRed(context)),
-                                const SizedBox(width: 12),
-                                _buildLegendItem(context, 'Paraphrased', AppColors.accentOrange(context)),
-                                const SizedBox(width: 12),
-                                _buildLegendItem(context, 'Original', AppColors.textSecondary(context)),
-                              ],
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-                        const Divider(color: Color(0xFF252545)),
-                        const SizedBox(height: 16),
-
-                        // Document Interactive Text Viewer
-                        Container(
-                          constraints: const BoxConstraints(minHeight: 320),
-                          padding: const EdgeInsets.all(18),
-                          decoration: BoxDecoration(
-                            color: AppColors.surfaceElevated(context).withValues(alpha: 0.5),
-                            borderRadius: BorderRadius.circular(AppRadius.md),
-                            border: Border.all(color: AppColors.borderSubtle(context)),
-                          ),
-                          child: SingleChildScrollView(
-                            child: _buildHighlightedContent(context),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 24),
-
-                // Right Column: Source Breakdown Panel
-                Expanded(
-                  flex: 2,
-                  child: GlassCard(
-                    padding: const EdgeInsets.all(24),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Icon(
-                              Icons.source_rounded,
-                              color: AppColors.accentBlue(context),
-                              size: 20,
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              'Matching Sources',
-                              style: TextStyle(
-                                color: AppColors.textPrimary(context),
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-                        const Divider(color: Color(0xFF252545)),
-                        const SizedBox(height: 16),
-
-                        if (_report!.uniqueSources.isEmpty) ...[
-                          const Padding(
-                            padding: EdgeInsets.symmetric(vertical: 24),
-                            child: Center(
-                              child: Text(
-                                'No external sources detected.',
-                                style: TextStyle(color: Color(0xFF8888BB)),
-                              ),
-                            ),
-                          ),
-                        ] else ...[
-                          ListView.separated(
-                            shrinkWrap: true,
-                            physics: const NeverScrollableScrollPhysics(),
-                            itemCount: _report!.uniqueSources.length,
-                            separatorBuilder: (_, _) => const SizedBox(height: 12),
-                            itemBuilder: (context, index) {
-                              final sourceTitle = _report!.uniqueSources[index];
-                              // Find matching spans for this source
-                              final sourceSpans = _report!.flaggedSpans
-                                  .where((s) => s.sourceTitle == sourceTitle)
-                                  .toList();
-                              final avgScore = sourceSpans.isNotEmpty
-                                  ? sourceSpans.map((s) => s.similarityScore).reduce((a, b) => a + b) /
-                                      sourceSpans.length
-                                  : 0.5;
-
-                              return _buildSourceCard(
-                                context,
-                                title: sourceTitle,
-                                score: avgScore,
-                                count: sourceSpans.length,
-                              );
-                            },
-                          ),
-                        ],
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
+            if (isMobile)
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  leftDocumentViewerCard,
+                  const SizedBox(height: 20),
+                  rightSourcesCard,
+                ],
+              )
+            else
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(flex: 3, child: leftDocumentViewerCard),
+                  const SizedBox(width: 24),
+                  Expanded(flex: 2, child: rightSourcesCard),
+                ],
+              ),
             const SizedBox(height: 32),
 
             // Bottom Action Bar
@@ -493,6 +610,7 @@ class _PlagiarismReportScreenState extends State<PlagiarismReportScreen>
       ),
     );
   }
+
 
   Widget _buildMiniStatCard(
     BuildContext context, {
@@ -621,73 +739,4 @@ class _PlagiarismReportScreenState extends State<PlagiarismReportScreen>
       ],
     );
   }
-
-  Widget _buildSourceCard(
-    BuildContext context, {
-    required String title,
-    required double score,
-    required int count,
-  }) {
-    final percent = (score * 100).toInt();
-    final color = AppColors.scoreColor(score * 100);
-
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceElevated(context),
-        borderRadius: BorderRadius.circular(AppRadius.md),
-        border: Border.all(color: AppColors.borderSubtle(context)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  title,
-                  style: TextStyle(
-                    color: AppColors.textPrimary(context),
-                    fontSize: 13,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(AppRadius.pill),
-                ),
-                child: Text(
-                  '$percent%',
-                  style: TextStyle(
-                    color: color,
-                    fontSize: 11,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          LinearProgressIndicator(
-            value: score,
-            backgroundColor: AppColors.borderSubtle(context),
-            valueColor: AlwaysStoppedAnimation<Color>(color),
-            minHeight: 4,
-          ),
-          const SizedBox(height: 6),
-          Text(
-            '$count flagged sentence(s)',
-            style: const TextStyle(
-              color: Color(0xFF8888BB),
-              fontSize: 10,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
+}

@@ -161,10 +161,155 @@ class _MitigationScreenState extends State<MitigationScreen> {
     final accentGreen = AppColors.accentGreen(context);
     final accentRed = AppColors.accentRed(context);
 
+    final isMobile = MediaQuery.of(context).size.width < 800;
+
+    final leftOriginalCard = GlassCard(
+      borderColor: accentRed.withValues(alpha: 0.5),
+      glowColor: accentRed.withValues(alpha: 0.2),
+      padding: EdgeInsets.all(isMobile ? 16 : 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.flag_rounded, size: 20, color: accentRed),
+              const SizedBox(width: 8),
+              Text(
+                'Original (Flagged)',
+                style: TextStyle(
+                  color: AppColors.textPrimary(context),
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const Spacer(),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: accentRed.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(AppRadius.pill),
+                ),
+                child: Text(
+                  '${(currentSpan.similarityScore * 100).toInt()}% Match',
+                  style: TextStyle(
+                    color: accentRed,
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          const Divider(color: Color(0xFF252545)),
+          const SizedBox(height: 16),
+
+          Container(
+            constraints: BoxConstraints(minHeight: isMobile ? 120 : 180),
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: accentRed.withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(AppRadius.md),
+              border: Border.all(color: accentRed.withValues(alpha: 0.25)),
+            ),
+            child: Text(
+              currentSpan.text,
+              style: TextStyle(
+                color: accentRed,
+                fontSize: 14,
+                height: 1.6,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    final rightRewriteCard = GlassCard(
+      borderColor: accentGreen.withValues(alpha: 0.5),
+      glowColor: accentGreen.withValues(alpha: 0.2),
+      padding: EdgeInsets.all(isMobile ? 16 : 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.auto_awesome_rounded, size: 20, color: accentGreen),
+              const SizedBox(width: 8),
+              Text(
+                'AI Suggested Rewrite',
+                style: TextStyle(
+                  color: AppColors.textPrimary(context),
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const Spacer(),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: accentGreen.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(AppRadius.pill),
+                ),
+                child: Text(
+                  '0% Similarity',
+                  style: TextStyle(
+                    color: accentGreen,
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          const Divider(color: Color(0xFF252545)),
+          const SizedBox(height: 16),
+
+          Container(
+            constraints: BoxConstraints(minHeight: isMobile ? 120 : 180),
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: accentGreen.withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(AppRadius.md),
+              border: Border.all(color: accentGreen.withValues(alpha: 0.25)),
+            ),
+            child: Text(
+              currentSpan.rewrittenText ??
+                  'According to empirical investigation, academic syntax can be systematically refactored to align with non-derivative publication standards.',
+              style: TextStyle(
+                color: AppColors.textPrimary(context),
+                fontSize: 14,
+                height: 1.6,
+              ),
+            ),
+          ),
+          const SizedBox(height: 20),
+
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              OutlinedButton(
+                onPressed: _handleSkip,
+                child: const Text('Skip'),
+              ),
+              const SizedBox(width: 12),
+              GradientButton(
+                text: 'Accept Rewrite',
+                icon: Icons.check_rounded,
+                onPressed: _handleAccept,
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(32),
+        padding: EdgeInsets.all(isMobile ? 16 : 32),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -179,7 +324,7 @@ class _MitigationScreenState extends State<MitigationScreen> {
                       'AI Mitigation Engine',
                       style: TextStyle(
                         color: AppColors.textPrimary(context),
-                        fontSize: 24,
+                        fontSize: isMobile ? 20 : 24,
                         fontWeight: FontWeight.bold,
                         letterSpacing: -0.5,
                       ),
@@ -195,14 +340,14 @@ class _MitigationScreenState extends State<MitigationScreen> {
                   ],
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
                     color: AppColors.surfaceElevated(context),
                     borderRadius: BorderRadius.circular(AppRadius.pill),
                     border: Border.all(color: AppColors.borderMid(context)),
                   ),
                   child: Text(
-                    '${_currentSegmentIndex + 1} / $totalSegments segments',
+                    '${_currentSegmentIndex + 1} / $totalSegments',
                     style: TextStyle(
                       color: accentGreen,
                       fontSize: 12,
@@ -216,22 +361,25 @@ class _MitigationScreenState extends State<MitigationScreen> {
 
             // Stage Pipeline Bar
             GlassCard(
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.all(16),
               child: Column(
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      _buildPipelineStep(context, 'Scan', isDone: true),
-                      _buildPipelineArrow(context),
-                      _buildPipelineStep(context, 'Detect', isDone: true),
-                      _buildPipelineArrow(context),
-                      _buildPipelineStep(context, 'Rewrite', isActive: true),
-                      _buildPipelineArrow(context),
-                      _buildPipelineStep(context, 'Verify', isPending: true),
-                      _buildPipelineArrow(context),
-                      _buildPipelineStep(context, 'Finalize', isPending: true),
-                    ],
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        _buildPipelineStep(context, 'Scan', isDone: true),
+                        _buildPipelineArrow(context),
+                        _buildPipelineStep(context, 'Detect', isDone: true),
+                        _buildPipelineArrow(context),
+                        _buildPipelineStep(context, 'Rewrite', isActive: true),
+                        _buildPipelineArrow(context),
+                        _buildPipelineStep(context, 'Verify', isPending: true),
+                        _buildPipelineArrow(context),
+                        _buildPipelineStep(context, 'Finalize', isPending: true),
+                      ],
+                    ),
                   ),
                   const SizedBox(height: 16),
                   // Progress Fill Bar
@@ -257,12 +405,15 @@ class _MitigationScreenState extends State<MitigationScreen> {
                         ),
                       ),
                       const SizedBox(width: 10),
-                      Text(
-                        'Reviewing segment ${_currentSegmentIndex + 1} of $totalSegments — Source: ${currentSpan.sourceTitle ?? "External Database"}',
-                        style: TextStyle(
-                          color: AppColors.textSecondary(context),
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
+                      Expanded(
+                        child: Text(
+                          'Reviewing segment ${_currentSegmentIndex + 1} of $totalSegments — Source: ${currentSpan.sourceTitle ?? "External Database"}',
+                          style: TextStyle(
+                            color: AppColors.textSecondary(context),
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                          ),
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
                     ],
@@ -270,163 +421,27 @@ class _MitigationScreenState extends State<MitigationScreen> {
                 ],
               ),
             ),
-            const SizedBox(height: 28),
+            const SizedBox(height: 24),
 
-            // Two-Panel Side by Side Layout
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // LEFT: Original (Flagged) Card
-                Expanded(
-                  child: GlassCard(
-                    borderColor: accentRed.withValues(alpha: 0.5),
-                    glowColor: accentRed.withValues(alpha: 0.2),
-                    padding: const EdgeInsets.all(24),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Icon(Icons.flag_rounded, size: 20, color: accentRed),
-                            const SizedBox(width: 8),
-                            Text(
-                              'Original (Flagged)',
-                              style: TextStyle(
-                                color: AppColors.textPrimary(context),
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const Spacer(),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                              decoration: BoxDecoration(
-                                color: accentRed.withValues(alpha: 0.15),
-                                borderRadius: BorderRadius.circular(AppRadius.pill),
-                              ),
-                              child: Text(
-                                '${(currentSpan.similarityScore * 100).toInt()}% Match',
-                                style: TextStyle(
-                                  color: accentRed,
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-                        const Divider(color: Color(0xFF252545)),
-                        const SizedBox(height: 16),
-
-                        Container(
-                          constraints: const BoxConstraints(minHeight: 180),
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: accentRed.withValues(alpha: 0.08),
-                            borderRadius: BorderRadius.circular(AppRadius.md),
-                            border: Border.all(color: accentRed.withValues(alpha: 0.25)),
-                          ),
-                          child: Text(
-                            currentSpan.text,
-                            style: TextStyle(
-                              color: accentRed,
-                              fontSize: 14,
-                              height: 1.6,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 24),
-
-                // RIGHT: AI Suggested Rewrite Card
-                Expanded(
-                  child: GlassCard(
-                    borderColor: accentGreen.withValues(alpha: 0.5),
-                    glowColor: accentGreen.withValues(alpha: 0.2),
-                    padding: const EdgeInsets.all(24),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Icon(Icons.auto_awesome_rounded, size: 20, color: accentGreen),
-                            const SizedBox(width: 8),
-                            Text(
-                              'AI Suggested Rewrite',
-                              style: TextStyle(
-                                color: AppColors.textPrimary(context),
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const Spacer(),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                              decoration: BoxDecoration(
-                                color: accentGreen.withValues(alpha: 0.15),
-                                borderRadius: BorderRadius.circular(AppRadius.pill),
-                              ),
-                              child: Text(
-                                '0% Similarity',
-                                style: TextStyle(
-                                  color: accentGreen,
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-                        const Divider(color: Color(0xFF252545)),
-                        const SizedBox(height: 16),
-
-                        Container(
-                          constraints: const BoxConstraints(minHeight: 180),
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: accentGreen.withValues(alpha: 0.08),
-                            borderRadius: BorderRadius.circular(AppRadius.md),
-                            border: Border.all(color: accentGreen.withValues(alpha: 0.25)),
-                          ),
-                          child: Text(
-                            currentSpan.rewrittenText ??
-                                'According to empirical investigation, academic syntax can be systematically refactored to align with non-derivative publication standards.',
-                            style: TextStyle(
-                              color: AppColors.textPrimary(context),
-                              fontSize: 14,
-                              height: 1.6,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 20),
-
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                            OutlinedButton(
-                              onPressed: _handleSkip,
-                              child: const Text('Skip'),
-                            ),
-                            const SizedBox(width: 12),
-                            GradientButton(
-                              text: 'Accept Rewrite',
-                              icon: Icons.check_rounded,
-                              onPressed: _handleAccept,
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
+            // Layout
+            if (isMobile)
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  leftOriginalCard,
+                  const SizedBox(height: 20),
+                  rightRewriteCard,
+                ],
+              )
+            else
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(child: leftOriginalCard),
+                  const SizedBox(width: 24),
+                  Expanded(child: rightRewriteCard),
+                ],
+              ),
             const SizedBox(height: 32),
 
             // Bottom Actions Bar

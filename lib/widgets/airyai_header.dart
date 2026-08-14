@@ -28,9 +28,11 @@ class LemmaHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final accentGreen = AppColors.accentGreen(context);
 
+    final isMobile = MediaQuery.of(context).size.width < 600;
+
     return Container(
       height: 56,
-      padding: const EdgeInsets.symmetric(horizontal: 20),
+      padding: EdgeInsets.symmetric(horizontal: isMobile ? 10 : 20),
       decoration: BoxDecoration(
         color: AppColors.bgDeep(context),
         border: Border(
@@ -42,10 +44,12 @@ class LemmaHeader extends StatelessWidget {
           // Sidebar Toggle Button
           IconButton(
             onPressed: onToggleSidebar,
-            icon: Icon(Icons.menu_rounded, color: AppColors.textSecondary(context), size: 18),
-            tooltip: 'Toggle Sidebar',
+            icon: Icon(Icons.menu_rounded, color: AppColors.textSecondary(context), size: 20),
+            tooltip: 'Toggle Navigation',
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
           ),
-          const SizedBox(width: 8),
+          SizedBox(width: isMobile ? 8 : 12),
 
           // Search pill — opens command palette
           Expanded(
@@ -56,7 +60,7 @@ class LemmaHeader extends StatelessWidget {
                 child: Container(
                   height: 36,
                   constraints: const BoxConstraints(maxWidth: 440),
-                  padding: const EdgeInsets.symmetric(horizontal: 14),
+                  padding: EdgeInsets.symmetric(horizontal: isMobile ? 8 : 14),
                   decoration: BoxDecoration(
                     color: AppColors.surfaceElevated(context),
                     borderRadius: BorderRadius.circular(AppRadius.md),
@@ -65,28 +69,30 @@ class LemmaHeader extends StatelessWidget {
                   child: Row(
                     children: [
                       Icon(Icons.search_rounded, color: AppColors.textSecondary(context), size: 16),
-                      const SizedBox(width: 10),
+                      SizedBox(width: isMobile ? 6 : 10),
                       Expanded(
                         child: Text(
-                          'Search reports or run command…',
-                          style: TextStyle(color: AppColors.textSecondary(context), fontSize: 12.5),
+                          isMobile ? 'Search…' : 'Search reports or run command…',
+                          style: TextStyle(color: AppColors.textSecondary(context), fontSize: 12),
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: AppColors.borderSubtle(context),
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: const Text(
-                          'Ctrl+K',
-                          style: TextStyle(
-                            color: Color(0xFF8888BB),
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
+                      if (!isMobile)
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: AppColors.borderSubtle(context),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: const Text(
+                            'Ctrl+K',
+                            style: TextStyle(
+                              color: Color(0xFF8888BB),
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
-                      ),
                     ],
                   ),
                 ),
@@ -94,7 +100,7 @@ class LemmaHeader extends StatelessWidget {
             ),
           ),
 
-          const SizedBox(width: 16),
+          SizedBox(width: isMobile ? 6 : 12),
 
           // Dark/Light Theme toggle
           IconButton(
@@ -104,17 +110,22 @@ class LemmaHeader extends StatelessWidget {
               color: AppColors.textSecondary(context),
               size: 18,
             ),
-            tooltip: isDarkMode ? 'Switch to Warm Light' : 'Switch to Dark Pro',
+            tooltip: isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode',
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
           ),
 
-          const SizedBox(width: 8),
+          SizedBox(width: isMobile ? 6 : 10),
 
           // New Scan button
           InkWell(
             onTap: onNewWorkspace,
             borderRadius: BorderRadius.circular(AppRadius.md),
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              padding: EdgeInsets.symmetric(
+                horizontal: isMobile ? 10 : 14,
+                vertical: 8,
+              ),
               decoration: BoxDecoration(
                 gradient: AppGradients.cyanGreen,
                 borderRadius: BorderRadius.circular(AppRadius.md),
@@ -125,25 +136,27 @@ class LemmaHeader extends StatelessWidget {
                   ),
                 ],
               ),
-              child: const Row(
+              child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.add_rounded, size: 16, color: Color(0xFF060610)),
-                  SizedBox(width: 6),
-                  Text(
-                    'New Scan',
-                    style: TextStyle(
-                      color: Color(0xFF060610),
-                      fontSize: 12.5,
-                      fontWeight: FontWeight.bold,
+                  const Icon(Icons.add_rounded, size: 16, color: Color(0xFF060610)),
+                  if (!isMobile) ...[
+                    const SizedBox(width: 6),
+                    const Text(
+                      'New Scan',
+                      style: TextStyle(
+                        color: Color(0xFF060610),
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                  ),
+                  ],
                 ],
               ),
             ),
           ),
 
-          const SizedBox(width: 14),
+          SizedBox(width: isMobile ? 8 : 12),
 
           // User Avatar -> Opens Profile Dialog
           InkWell(
@@ -154,8 +167,8 @@ class LemmaHeader extends StatelessWidget {
             ),
             borderRadius: BorderRadius.circular(AppRadius.pill),
             child: Container(
-              width: 34,
-              height: 34,
+              width: 32,
+              height: 32,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 gradient: AppGradients.purpleCyan,
@@ -167,7 +180,7 @@ class LemmaHeader extends StatelessWidget {
                       : 'BH',
                   style: const TextStyle(
                     color: Color(0xFF060610),
-                    fontSize: 13,
+                    fontSize: 12,
                     fontWeight: FontWeight.bold,
                   ),
                 ),

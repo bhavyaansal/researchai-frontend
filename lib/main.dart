@@ -135,6 +135,7 @@ class _AppShellState extends State<AppShell> {
   bool _isPolling = false;
 
   final FocusNode _shellFocusNode = FocusNode();
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
@@ -233,6 +234,8 @@ class _AppShellState extends State<AppShell> {
 
   @override
   Widget build(BuildContext context) {
+    final isMobile = MediaQuery.of(context).size.width < 768;
+
     return CallbackShortcuts(
       bindings: {
         const SingleActivator(LogicalKeyboardKey.keyK, control: true): _showCommandPalette,
@@ -246,6 +249,22 @@ class _AppShellState extends State<AppShell> {
         focusNode: _shellFocusNode,
         autofocus: true,
         child: Scaffold(
+          key: _scaffoldKey,
+          drawer: isMobile
+              ? Drawer(
+                  backgroundColor: AppColors.bgDeep(context),
+                  width: 260,
+                  child: AppSidebar(
+                    current: _current,
+                    isCollapsed: false,
+                    onToggleCollapse: () => Navigator.of(context).pop(),
+                    onNavigate: _navigate,
+                    userEmail: widget.authService.userEmail ?? '',
+                    onLogout: widget.onLogout,
+                    onOpenCommandPalette: _showCommandPalette,
+                  ),
+                )
+              : null,
           backgroundColor: AppColors.bgDeep(context),
           body: Container(
             decoration: widget.isDarkMode
@@ -258,7 +277,13 @@ class _AppShellState extends State<AppShell> {
                 // Top Header
                 LemmaHeader(
                   isSidebarCollapsed: _sidebarCollapsed,
-                  onToggleSidebar: () => setState(() => _sidebarCollapsed = !_sidebarCollapsed),
+                  onToggleSidebar: () {
+                    if (isMobile) {
+                      _scaffoldKey.currentState?.openDrawer();
+                    } else {
+                      setState(() => _sidebarCollapsed = !_sidebarCollapsed);
+                    }
+                  },
                   onNewWorkspace: () => _navigate(AppScreen.upload),
                   userEmail: widget.authService.userEmail ?? '',
                   onLogout: widget.onLogout,
@@ -271,15 +296,16 @@ class _AppShellState extends State<AppShell> {
                 Expanded(
                   child: Row(
                     children: [
-                      AppSidebar(
-                        current: _current,
-                        isCollapsed: _sidebarCollapsed,
-                        onToggleCollapse: () => setState(() => _sidebarCollapsed = !_sidebarCollapsed),
-                        onNavigate: _navigate,
-                        userEmail: widget.authService.userEmail ?? '',
-                        onLogout: widget.onLogout,
-                        onOpenCommandPalette: _showCommandPalette,
-                      ),
+                      if (!isMobile)
+                        AppSidebar(
+                          current: _current,
+                          isCollapsed: _sidebarCollapsed,
+                          onToggleCollapse: () => setState(() => _sidebarCollapsed = !_sidebarCollapsed),
+                          onNavigate: _navigate,
+                          userEmail: widget.authService.userEmail ?? '',
+                          onLogout: widget.onLogout,
+                          onOpenCommandPalette: _showCommandPalette,
+                        ),
                       Expanded(
                         child: AnimatedSwitcher(
                           duration: const Duration(milliseconds: 250),

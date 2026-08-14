@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:typed_data';
 import 'package:dio/dio.dart';
 import '../models/job_model.dart';
 
@@ -25,15 +26,26 @@ class ApiService {
   }
 
   Future<JobModel> uploadDocument({
-    required String filePath,
+    String? filePath,
+    Uint8List? bytes,
     required String filename,
   }) async {
+    MultipartFile multipartFile;
+    if (bytes != null) {
+      multipartFile = MultipartFile.fromBytes(bytes, filename: filename);
+    } else if (filePath != null && filePath.isNotEmpty) {
+      multipartFile = await MultipartFile.fromFile(filePath, filename: filename);
+    } else {
+      throw Exception('No file data provided for upload');
+    }
+
     final formData = FormData.fromMap({
-      'file': await MultipartFile.fromFile(filePath, filename: filename),
+      'file': multipartFile,
     });
     final response = await _dio.post('/upload', data: formData);
     return _jobFromUploadResponse(response.data, filename);
   }
+
 
   Future<JobModel> uploadText({required String text, required String title}) async {
     final response = await _dio.post('/upload/text', data: {

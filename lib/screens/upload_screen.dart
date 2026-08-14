@@ -1,3 +1,4 @@
+import 'dart:typed_data';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import '../models/job_model.dart';
@@ -28,9 +29,11 @@ class _UploadScreenState extends State<UploadScreen> with SingleTickerProviderSt
 
   // File Upload State
   String? _selectedFilePath;
+  Uint8List? _selectedFileBytes;
   String? _selectedFileName;
   int? _selectedFileSize;
   bool _isHoveringDropZone = false;
+
 
   // Text Input State
   final TextEditingController _textController = TextEditingController();
@@ -110,12 +113,14 @@ class _UploadScreenState extends State<UploadScreen> with SingleTickerProviderSt
     final result = await FilePicker.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['pdf', 'docx', 'txt'],
+      withData: true,
     );
 
     if (result != null && result.files.isNotEmpty) {
       final file = result.files.first;
       setState(() {
         _selectedFilePath = file.path;
+        _selectedFileBytes = file.bytes;
         _selectedFileName = file.name;
         _selectedFileSize = file.size;
       });
@@ -124,7 +129,7 @@ class _UploadScreenState extends State<UploadScreen> with SingleTickerProviderSt
 
   Future<void> _handleAnalyze() async {
     if (_activeTab == 0) {
-      if (_selectedFilePath == null || _selectedFileName == null) {
+      if ((_selectedFilePath == null && _selectedFileBytes == null) || _selectedFileName == null) {
         CustomToast.show(
           context,
           title: 'No file selected',
@@ -137,7 +142,8 @@ class _UploadScreenState extends State<UploadScreen> with SingleTickerProviderSt
       setState(() => _isSubmitting = true);
       try {
         final job = await widget.apiService.uploadDocument(
-          filePath: _selectedFilePath!,
+          filePath: _selectedFilePath,
+          bytes: _selectedFileBytes,
           filename: _selectedFileName!,
         );
         widget.onUploadSuccess(job);
@@ -197,354 +203,385 @@ class _UploadScreenState extends State<UploadScreen> with SingleTickerProviderSt
     final dateStr = '${weekdays[now.weekday - 1]}, ${months[now.month - 1]} ${now.day}, ${now.year}';
     final accentGreen = AppColors.accentGreen(context);
 
+    final isMobile = MediaQuery.of(context).size.width < 800;
+
+    final greetingColumn = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Good morning, $userName 👋',
+          style: TextStyle(
+            color: AppColors.textPrimary(context),
+            fontSize: isMobile ? 20 : 26,
+            fontWeight: FontWeight.bold,
+            letterSpacing: -0.5,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          dateStr,
+          style: TextStyle(
+            color: AppColors.textSecondary(context),
+            fontSize: 13,
+          ),
+        ),
+      ],
+    );
+
+    final pillTabsBar = Container(
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceElevated(context),
+        borderRadius: BorderRadius.circular(AppRadius.pill),
+        border: Border.all(color: AppColors.borderSubtle(context)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _buildPillTab(0, 'Upload Document', Icons.cloud_upload_outlined, isMobile),
+          _buildPillTab(1, 'Direct Text Input', Icons.edit_note_rounded, isMobile),
+        ],
+      ),
+    );
+
+    final leftPrimaryCard = GlassCard(
+      padding: EdgeInsets.all(isMobile ? 16 : 28),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (_activeTab == 0) ...[
+            // Upload Zone
+            Text(
+              'Select Document File',
+              style: TextStyle(
+                color: AppColors.textPrimary(context),
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'Supported formats: .pdf, .docx, .txt (up to 25MB)',
+              style: TextStyle(
+                color: AppColors.textSecondary(context),
+                fontSize: 12,
+              ),
+            ),
+            const SizedBox(height: 20),
+
+            MouseRegion(
+              onEnter: (_) => setState(() => _isHoveringDropZone = true),
+              onExit: (_) => setState(() => _isHoveringDropZone = false),
+              child: GestureDetector(
+                onTap: _pickFile,
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  height: isMobile ? 200 : 260,
+                  decoration: BoxDecoration(
+                    color: _isHoveringDropZone
+                        ? accentGreen.withValues(alpha: 0.06)
+                        : AppColors.surfaceElevated(context).withValues(alpha: 0.5),
+                    borderRadius: BorderRadius.circular(AppRadius.lg),
+                    border: Border.all(
+                      color: _isHoveringDropZone || _selectedFileName != null
+                          ? accentGreen
+                          : AppColors.borderMid(context),
+                      width: _isHoveringDropZone ? 2.0 : 1.5,
+                      style: BorderStyle.solid,
+                    ),
+                    boxShadow: _isHoveringDropZone
+                        ? [
+                            BoxShadow(
+                              color: accentGreen.withValues(alpha: 0.2),
+                              blurRadius: 16,
+                            )
+                          ]
+                        : [],
+                  ),
+                  child: Center(
+                    child: _selectedFileName == null
+                        ? Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              AnimatedContainer(
+                                duration: const Duration(milliseconds: 200),
+                                padding: EdgeInsets.all(isMobile ? 12 : 18),
+                                decoration: BoxDecoration(
+                                  color: accentGreen.withValues(alpha: 0.12),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Icon(
+                                  Icons.cloud_upload_rounded,
+                                  size: isMobile ? 28 : 36,
+                                  color: accentGreen,
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 16),
+                                child: Text(
+                                  'Drag & drop document here, or click to browse',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    color: AppColors.textPrimary(context),
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              const Text(
+                                'High accuracy multi-source vector checking',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  color: Color(0xFF8888BB),
+                                  fontSize: 11,
+                                ),
+                              ),
+                            ],
+                          )
+                        : Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.insert_drive_file_rounded,
+                                size: 48,
+                                color: accentGreen,
+                              ),
+                              const SizedBox(height: 12),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 16),
+                                child: Text(
+                                  _selectedFileName!,
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    color: AppColors.textPrimary(context),
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              if (_selectedFileSize != null)
+                                Text(
+                                  '${(_selectedFileSize! / 1024).toStringAsFixed(1)} KB',
+                                  style: TextStyle(
+                                    color: AppColors.textSecondary(context),
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              const SizedBox(height: 14),
+                              OutlinedButton.icon(
+                                onPressed: () {
+                                  setState(() {
+                                    _selectedFilePath = null;
+                                    _selectedFileName = null;
+                                  });
+                                },
+                                icon: const Icon(Icons.refresh_rounded, size: 16),
+                                label: const Text('Change File'),
+                              ),
+                            ],
+                          ),
+                  ),
+                ),
+              ),
+            ),
+          ] else ...[
+            // Direct Text Area Input
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _titleController,
+                    style: TextStyle(
+                      color: AppColors.textPrimary(context),
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    decoration: const InputDecoration(
+                      labelText: 'Document Title',
+                      hintText: 'Enter title for this scan...',
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: _textController,
+              maxLines: 8,
+              style: TextStyle(
+                color: AppColors.textPrimary(context),
+                fontSize: 13,
+                height: 1.5,
+              ),
+              decoration: const InputDecoration(
+                hintText: 'Paste academic text, draft or paper content here to scan for plagiarism...',
+                alignLabelWithHint: true,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  '$_wordCount words • $_charCount characters',
+                  style: TextStyle(
+                    color: AppColors.accentBlue(context),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                if (_wordCount > 0)
+                  TextButton(
+                    onPressed: () => _textController.clear(),
+                    child: const Text('Clear Text'),
+                  ),
+              ],
+            ),
+          ],
+
+          const SizedBox(height: 24),
+
+          // Action Button
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              GradientButton(
+                text: 'Analyze Document',
+                icon: Icons.arrow_forward_rounded,
+                isLoading: _isSubmitting,
+                onPressed: _handleAnalyze,
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+
+    final rightQuickStatsCard = GlassCard(
+      padding: EdgeInsets.all(isMobile ? 16 : 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                Icons.analytics_rounded,
+                color: accentGreen,
+                size: 20,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                'Quick Stats',
+                style: TextStyle(
+                  color: AppColors.textPrimary(context),
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          const Divider(color: Color(0xFF252545)),
+          const SizedBox(height: 12),
+
+          if (_isLoadingStats) ...[
+            const Center(
+              child: Padding(
+                padding: EdgeInsets.all(32.0),
+                child: CircularProgressIndicator(),
+              ),
+            ),
+          ] else ...[
+            _buildStatCard(
+              context,
+              title: 'Total Scans',
+              value: '$_totalScans',
+              subtitle: 'Lifetime processed documents',
+              icon: Icons.article_rounded,
+              iconColor: AppColors.accentBlue(context),
+            ),
+            const SizedBox(height: 12),
+            _buildStatCard(
+              context,
+              title: 'Avg Similarity',
+              value: '${_avgSimilarity.toStringAsFixed(1)}%',
+              subtitle: 'Across all past reports',
+              icon: Icons.speed_rounded,
+              iconColor: _avgSimilarity <= 15
+                  ? accentGreen
+                  : AppColors.accentOrange(context),
+            ),
+            const SizedBox(height: 12),
+            _buildStatCard(
+              context,
+              title: 'Scanned This Week',
+              value: '$_docsThisWeek',
+              subtitle: 'Recent activity count',
+              icon: Icons.date_range_rounded,
+              iconColor: AppColors.accentPurple(context),
+            ),
+          ],
+        ],
+      ),
+    );
+
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(32),
+        padding: EdgeInsets.all(isMobile ? 16 : 32),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Hero Greeting Header
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Good morning, $userName 👋',
-                      style: TextStyle(
-                        color: AppColors.textPrimary(context),
-                        fontSize: 26,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: -0.5,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      dateStr,
-                      style: TextStyle(
-                        color: AppColors.textSecondary(context),
-                        fontSize: 13,
-                      ),
-                    ),
-                  ],
-                ),
-                // Pill Tabs Bar
-                Container(
-                  padding: const EdgeInsets.all(4),
-                  decoration: BoxDecoration(
-                    color: AppColors.surfaceElevated(context),
-                    borderRadius: BorderRadius.circular(AppRadius.pill),
-                    border: Border.all(color: AppColors.borderSubtle(context)),
-                  ),
-                  child: Row(
-                    children: [
-                      _buildPillTab(0, 'Upload Document', Icons.cloud_upload_outlined),
-                      _buildPillTab(1, 'Direct Text Input', Icons.edit_note_rounded),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 28),
+            if (isMobile)
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  greetingColumn,
+                  const SizedBox(height: 14),
+                  pillTabsBar,
+                ],
+              )
+            else
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  greetingColumn,
+                  pillTabsBar,
+                ],
+              ),
+            const SizedBox(height: 24),
 
-            // Main Two Column Layout
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Left Primary Input Card (Upload Zone or Text Area)
-                Expanded(
-                  flex: 3,
-                  child: GlassCard(
-                    padding: const EdgeInsets.all(28),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        if (_activeTab == 0) ...[
-                          // Upload Zone
-                          Text(
-                            'Select Document File',
-                            style: TextStyle(
-                              color: AppColors.textPrimary(context),
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Supported formats: .pdf, .docx, .txt (up to 25MB)',
-                            style: TextStyle(
-                              color: AppColors.textSecondary(context),
-                              fontSize: 12,
-                            ),
-                          ),
-                          const SizedBox(height: 20),
-
-                          MouseRegion(
-                            onEnter: (_) => setState(() => _isHoveringDropZone = true),
-                            onExit: (_) => setState(() => _isHoveringDropZone = false),
-                            child: GestureDetector(
-                              onTap: _pickFile,
-                              child: AnimatedContainer(
-                                duration: const Duration(milliseconds: 200),
-                                height: 260,
-                                decoration: BoxDecoration(
-                                  color: _isHoveringDropZone
-                                      ? accentGreen.withValues(alpha: 0.06)
-                                      : AppColors.surfaceElevated(context).withValues(alpha: 0.5),
-                                  borderRadius: BorderRadius.circular(AppRadius.lg),
-                                  border: Border.all(
-                                    color: _isHoveringDropZone || _selectedFileName != null
-                                        ? accentGreen
-                                        : AppColors.borderMid(context),
-                                    width: _isHoveringDropZone ? 2.0 : 1.5,
-                                    style: BorderStyle.solid,
-                                  ),
-                                  boxShadow: _isHoveringDropZone
-                                      ? [
-                                          BoxShadow(
-                                            color: accentGreen.withValues(alpha: 0.2),
-                                            blurRadius: 16,
-                                          )
-                                        ]
-                                      : [],
-                                ),
-                                child: Center(
-                                  child: _selectedFileName == null
-                                      ? Column(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            AnimatedContainer(
-                                              duration: const Duration(milliseconds: 200),
-                                              padding: const EdgeInsets.all(18),
-                                              decoration: BoxDecoration(
-                                                color: accentGreen.withValues(alpha: 0.12),
-                                                shape: BoxShape.circle,
-                                              ),
-                                              child: Icon(
-                                                Icons.cloud_upload_rounded,
-                                                size: 36,
-                                                color: accentGreen,
-                                              ),
-                                            ),
-                                            const SizedBox(height: 16),
-                                            Text(
-                                              'Drag & drop document here, or click to browse',
-                                              style: TextStyle(
-                                                color: AppColors.textPrimary(context),
-                                                fontSize: 14,
-                                                fontWeight: FontWeight.w600,
-                                              ),
-                                            ),
-                                            const SizedBox(height: 6),
-                                            const Text(
-                                              'High accuracy multi-source vector checking',
-                                              style: TextStyle(
-                                                color: Color(0xFF8888BB),
-                                                fontSize: 12,
-                                              ),
-                                            ),
-                                          ],
-                                        )
-                                      : Column(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            Icon(
-                                              Icons.insert_drive_file_rounded,
-                                              size: 48,
-                                              color: accentGreen,
-                                            ),
-                                            const SizedBox(height: 12),
-                                            Text(
-                                              _selectedFileName!,
-                                              style: TextStyle(
-                                                color: AppColors.textPrimary(context),
-                                                fontSize: 15,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            ),
-                                            const SizedBox(height: 4),
-                                            if (_selectedFileSize != null)
-                                              Text(
-                                                '${(_selectedFileSize! / 1024).toStringAsFixed(1)} KB',
-                                                style: TextStyle(
-                                                  color: AppColors.textSecondary(context),
-                                                  fontSize: 12,
-                                                ),
-                                              ),
-                                            const SizedBox(height: 14),
-                                            OutlinedButton.icon(
-                                              onPressed: () {
-                                                setState(() {
-                                                  _selectedFilePath = null;
-                                                  _selectedFileName = null;
-                                                });
-                                              },
-                                              icon: const Icon(Icons.refresh_rounded, size: 16),
-                                              label: const Text('Change File'),
-                                            ),
-                                          ],
-                                        ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ] else ...[
-                          // Direct Text Area Input
-                          Row(
-                            children: [
-                              Expanded(
-                                child: TextField(
-                                  controller: _titleController,
-                                  style: TextStyle(
-                                    color: AppColors.textPrimary(context),
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                  decoration: const InputDecoration(
-                                    labelText: 'Document Title',
-                                    hintText: 'Enter title for this scan...',
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 16),
-                          TextField(
-                            controller: _textController,
-                            maxLines: 10,
-                            style: TextStyle(
-                              color: AppColors.textPrimary(context),
-                              fontSize: 13,
-                              height: 1.5,
-                            ),
-                            decoration: const InputDecoration(
-                              hintText: 'Paste academic text, draft or paper content here to scan for plagiarism...',
-                              alignLabelWithHint: true,
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                '$_wordCount words • $_charCount characters',
-                                style: TextStyle(
-                                  color: AppColors.accentBlue(context),
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                              if (_wordCount > 0)
-                                TextButton(
-                                  onPressed: () => _textController.clear(),
-                                  child: const Text('Clear Text'),
-                                ),
-                            ],
-                          ),
-                        ],
-
-                        const SizedBox(height: 28),
-
-                        // Action Button
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                            GradientButton(
-                              text: 'Analyze Document',
-                              icon: Icons.arrow_forward_rounded,
-                              isLoading: _isSubmitting,
-                              onPressed: _handleAnalyze,
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 24),
-
-                // Right Column: Quick Stats Panel
-                Expanded(
-                  flex: 2,
-                  child: GlassCard(
-                    padding: const EdgeInsets.all(24),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Icon(
-                              Icons.analytics_rounded,
-                              color: accentGreen,
-                              size: 20,
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              'Quick Stats',
-                              style: TextStyle(
-                                color: AppColors.textPrimary(context),
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-                        const Divider(color: Color(0xFF252545)),
-                        const SizedBox(height: 16),
-
-                        if (_isLoadingStats) ...[
-                          const Center(
-                            child: Padding(
-                              padding: EdgeInsets.all(32.0),
-                              child: CircularProgressIndicator(),
-                            ),
-                          ),
-                        ] else ...[
-                          _buildStatCard(
-                            context,
-                            title: 'Total Scans',
-                            value: '$_totalScans',
-                            subtitle: 'Lifetime processed documents',
-                            icon: Icons.article_rounded,
-                            iconColor: AppColors.accentBlue(context),
-                          ),
-                          const SizedBox(height: 16),
-                          _buildStatCard(
-                            context,
-                            title: 'Avg Similarity',
-                            value: '${_avgSimilarity.toStringAsFixed(1)}%',
-                            subtitle: 'Across all past reports',
-                            icon: Icons.speed_rounded,
-                            iconColor: _avgSimilarity <= 15
-                                ? accentGreen
-                                : AppColors.accentOrange(context),
-                          ),
-                          const SizedBox(height: 16),
-                          _buildStatCard(
-                            context,
-                            title: 'Scanned This Week',
-                            value: '$_docsThisWeek',
-                            subtitle: 'Recent activity count',
-                            icon: Icons.date_range_rounded,
-                            iconColor: AppColors.accentPurple(context),
-                          ),
-                        ],
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
+            // Layout
+            if (isMobile)
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  leftPrimaryCard,
+                  const SizedBox(height: 20),
+                  rightQuickStatsCard,
+                ],
+              )
+            else
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(flex: 3, child: leftPrimaryCard),
+                  const SizedBox(width: 24),
+                  Expanded(flex: 2, child: rightQuickStatsCard),
+                ],
+              ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildPillTab(int index, String label, IconData icon) {
+  Widget _buildPillTab(int index, String label, IconData icon, [bool compact = false]) {
     final isActive = _activeTab == index;
     final accentGreen = AppColors.accentGreen(context);
 
@@ -553,24 +590,25 @@ class _UploadScreenState extends State<UploadScreen> with SingleTickerProviderSt
       borderRadius: BorderRadius.circular(AppRadius.pill),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        padding: EdgeInsets.symmetric(horizontal: compact ? 10 : 16, vertical: 8),
         decoration: BoxDecoration(
           color: isActive ? accentGreen : Colors.transparent,
           borderRadius: BorderRadius.circular(AppRadius.pill),
         ),
         child: Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
               icon,
-              size: 16,
+              size: 15,
               color: isActive ? const Color(0xFF060610) : AppColors.textSecondary(context),
             ),
-            const SizedBox(width: 6),
+            const SizedBox(width: 5),
             Text(
               label,
               style: TextStyle(
                 color: isActive ? const Color(0xFF060610) : AppColors.textSecondary(context),
-                fontSize: 13,
+                fontSize: compact ? 11.5 : 13,
                 fontWeight: isActive ? FontWeight.bold : FontWeight.w500,
               ),
             ),
@@ -589,7 +627,7 @@ class _UploadScreenState extends State<UploadScreen> with SingleTickerProviderSt
     required Color iconColor,
   }) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: AppColors.surfaceElevated(context),
         borderRadius: BorderRadius.circular(AppRadius.md),
@@ -598,17 +636,18 @@ class _UploadScreenState extends State<UploadScreen> with SingleTickerProviderSt
       child: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
               color: iconColor.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(AppRadius.md),
             ),
-            child: Icon(icon, color: iconColor, size: 22),
+            child: Icon(icon, color: iconColor, size: 20),
           ),
-          const SizedBox(width: 14),
+          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
                   title,
@@ -616,22 +655,28 @@ class _UploadScreenState extends State<UploadScreen> with SingleTickerProviderSt
                     color: AppColors.textSecondary(context),
                     fontSize: 12,
                   ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 2),
                 Text(
                   value,
                   style: TextStyle(
                     color: AppColors.textPrimary(context),
-                    fontSize: 20,
+                    fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
                 Text(
                   subtitle,
                   style: const TextStyle(
-                    color: Color(0xFF4A4A7A),
+                    color: Color(0xFF8888BB),
                     fontSize: 10,
                   ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),
