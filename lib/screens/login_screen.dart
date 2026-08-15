@@ -52,6 +52,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isMobile = Responsive.isMobile(context);
+
     return Scaffold(
       backgroundColor: AppColors.darkBgDeep,
       body: Container(
@@ -59,13 +61,15 @@ class _LoginScreenState extends State<LoginScreen> {
           gradient: AppGradients.darkBgRadial,
         ),
         child: Center(
-          child: GlassCard(
-            padding: const EdgeInsets.all(36),
-            child: SizedBox(
-              width: 380,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
+          child: SingleChildScrollView(
+            padding: EdgeInsets.all(isMobile ? 16 : 24),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 400),
+              child: GlassCard(
+                padding: EdgeInsets.all(isMobile ? 24 : 36),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
                   const AiryLogo(showText: true, size: 36),
                   const SizedBox(height: 20),
                   Text(
@@ -162,6 +166,8 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
 }
+}
+

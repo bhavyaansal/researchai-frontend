@@ -160,7 +160,7 @@ class _PlagiarismReportScreenState extends State<PlagiarismReportScreen>
     final formattedDate = '${months[jobDate.month - 1]} ${jobDate.day}, ${jobDate.year}';
 
 
-    final isMobile = MediaQuery.of(context).size.width < 800;
+    final isMobile = Responsive.isMobile(context);
 
     final gaugeCard = GlassCard(
       padding: EdgeInsets.symmetric(
@@ -583,28 +583,53 @@ class _PlagiarismReportScreenState extends State<PlagiarismReportScreen>
             const SizedBox(height: 32),
 
             // Bottom Action Bar
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                OutlinedButton.icon(
-                  onPressed: () {
-                    CustomToast.show(
-                      context,
-                      title: 'Exporting Report',
-                      message: 'Plagiarism analysis summary report downloaded.',
-                      type: ToastType.success,
-                    );
-                  },
-                  icon: const Icon(Icons.download_rounded, size: 18),
-                  label: const Text('Export Report'),
-                ),
-                GradientButton(
-                  text: 'Proceed to AI Mitigation',
-                  icon: Icons.auto_fix_high_rounded,
-                  onPressed: widget.onProceedToMitigation,
-                ),
-              ],
-            ),
+            if (isMobile)
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  GradientButton(
+                    text: 'Proceed to AI Mitigation',
+                    icon: Icons.auto_fix_high_rounded,
+                    onPressed: widget.onProceedToMitigation,
+                  ),
+                  const SizedBox(height: 12),
+                  OutlinedButton.icon(
+                    onPressed: () {
+                      CustomToast.show(
+                        context,
+                        title: 'Exporting Report',
+                        message: 'Plagiarism analysis summary report downloaded.',
+                        type: ToastType.success,
+                      );
+                    },
+                    icon: const Icon(Icons.download_rounded, size: 18),
+                    label: const Text('Export Report'),
+                  ),
+                ],
+              )
+            else
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  OutlinedButton.icon(
+                    onPressed: () {
+                      CustomToast.show(
+                        context,
+                        title: 'Exporting Report',
+                        message: 'Plagiarism analysis summary report downloaded.',
+                        type: ToastType.success,
+                      );
+                    },
+                    icon: const Icon(Icons.download_rounded, size: 18),
+                    label: const Text('Export Report'),
+                  ),
+                  GradientButton(
+                    text: 'Proceed to AI Mitigation',
+                    icon: Icons.auto_fix_high_rounded,
+                    onPressed: widget.onProceedToMitigation,
+                  ),
+                ],
+              ),
           ],
         ),
       ),

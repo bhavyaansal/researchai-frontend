@@ -28,7 +28,7 @@ class LemmaHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final accentGreen = AppColors.accentGreen(context);
 
-    final isMobile = MediaQuery.of(context).size.width < 600;
+    final isMobile = Responsive.isMobile(context);
 
     return Container(
       height: 56,

@@ -1,5 +1,16 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+
+/// Platform & screen-size responsive helper
+class Responsive {
+  static bool isMobile(BuildContext context) {
+    final isMobilePlatform = defaultTargetPlatform == TargetPlatform.android ||
+        defaultTargetPlatform == TargetPlatform.iOS;
+    final width = MediaQuery.sizeOf(context).width;
+    return isMobilePlatform || width < 1024;
+  }
+}
 
 /// Dark Pro & Warm Light Theme Colors & Design Tokens for ResearchAI
 class AppColors {

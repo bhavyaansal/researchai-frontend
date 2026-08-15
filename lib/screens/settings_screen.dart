@@ -63,11 +63,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     final accentGreen = AppColors.accentGreen(context);
+    final isMobile = Responsive.isMobile(context);
 
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(32),
+        padding: EdgeInsets.all(isMobile ? 16 : 32),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -76,7 +77,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               'Engine Settings',
               style: TextStyle(
                 color: AppColors.textPrimary(context),
-                fontSize: 26,
+                fontSize: isMobile ? 22 : 26,
                 fontWeight: FontWeight.bold,
                 letterSpacing: -0.5,
               ),
@@ -221,15 +222,26 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           ),
                         ),
                         const SizedBox(height: 10),
-                        Row(
-                          children: [
-                            _strategyOption(context, 'hybrid', 'Hybrid (BM25 + ChromaDB)'),
-                            const SizedBox(width: 12),
-                            _strategyOption(context, 'semantic', 'Semantic Vectors'),
-                            const SizedBox(width: 12),
-                            _strategyOption(context, 'lexical', 'BM25 Lexical'),
-                          ],
-                        ),
+                        if (isMobile)
+                          Column(
+                            children: [
+                              _strategyOption(context, 'hybrid', 'Hybrid (BM25 + ChromaDB)'),
+                              const SizedBox(height: 8),
+                              _strategyOption(context, 'semantic', 'Semantic Vectors'),
+                              const SizedBox(height: 8),
+                              _strategyOption(context, 'lexical', 'BM25 Lexical'),
+                            ],
+                          )
+                        else
+                          Row(
+                            children: [
+                              _strategyOption(context, 'hybrid', 'Hybrid (BM25 + ChromaDB)'),
+                              const SizedBox(width: 12),
+                              _strategyOption(context, 'semantic', 'Semantic Vectors'),
+                              const SizedBox(width: 12),
+                              _strategyOption(context, 'lexical', 'BM25 Lexical'),
+                            ],
+                          ),
                       ],
                     ),
                   ),
@@ -237,7 +249,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
                   // 3. Keyboard Shortcut Reference Cheat Sheet
                   GlassCard(
-                    padding: const EdgeInsets.all(24),
+                    padding: EdgeInsets.all(isMobile ? 16 : 24),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -259,21 +271,35 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         const Divider(color: Color(0xFF252545)),
                         const SizedBox(height: 16),
 
-                        Row(
-                          children: [
-                            Expanded(child: _buildShortcutRow(context, 'Ctrl + K', 'Quick Command Palette Search')),
-                            const SizedBox(width: 20),
-                            Expanded(child: _buildShortcutRow(context, 'Ctrl + U', 'Upload New Document')),
-                          ],
-                        ),
-                        const SizedBox(height: 12),
-                        Row(
-                          children: [
-                            Expanded(child: _buildShortcutRow(context, 'Ctrl + R', 'View Reports History')),
-                            const SizedBox(width: 20),
-                            Expanded(child: _buildShortcutRow(context, 'Ctrl + M', 'AI Mitigation Engine')),
-                          ],
-                        ),
+                        if (isMobile)
+                          Column(
+                            children: [
+                              _buildShortcutRow(context, 'Ctrl + K', 'Command Palette'),
+                              const SizedBox(height: 8),
+                              _buildShortcutRow(context, 'Ctrl + U', 'Upload Document'),
+                              const SizedBox(height: 8),
+                              _buildShortcutRow(context, 'Ctrl + R', 'Reports History'),
+                              const SizedBox(height: 8),
+                              _buildShortcutRow(context, 'Ctrl + M', 'AI Mitigation'),
+                            ],
+                          )
+                        else ...[
+                          Row(
+                            children: [
+                              Expanded(child: _buildShortcutRow(context, 'Ctrl + K', 'Quick Command Palette Search')),
+                              const SizedBox(width: 20),
+                              Expanded(child: _buildShortcutRow(context, 'Ctrl + U', 'Upload New Document')),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          Row(
+                            children: [
+                              Expanded(child: _buildShortcutRow(context, 'Ctrl + R', 'View Reports History')),
+                              const SizedBox(width: 20),
+                              Expanded(child: _buildShortcutRow(context, 'Ctrl + M', 'AI Mitigation Engine')),
+                            ],
+                          ),
+                        ],
                       ],
                     ),
                   ),
@@ -281,7 +307,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
                   // 4. Diagnostics & Health Check
                   GlassCard(
-                    padding: const EdgeInsets.all(24),
+                    padding: EdgeInsets.all(isMobile ? 16 : 24),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -336,21 +362,38 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   const SizedBox(height: 28),
 
                   // Action Buttons
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      OutlinedButton(
-                        onPressed: () => widget.onNavigate(AppScreen.upload),
-                        child: const Text('Cancel'),
-                      ),
-                      const SizedBox(width: 12),
-                      GradientButton(
-                        text: 'Save Settings',
-                        icon: Icons.check_rounded,
-                        onPressed: _saveSettings,
-                      ),
-                    ],
-                  ),
+                  if (isMobile)
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        GradientButton(
+                          text: 'Save Settings',
+                          icon: Icons.check_rounded,
+                          onPressed: _saveSettings,
+                        ),
+                        const SizedBox(height: 10),
+                        OutlinedButton(
+                          onPressed: () => widget.onNavigate(AppScreen.upload),
+                          child: const Text('Cancel'),
+                        ),
+                      ],
+                    )
+                  else
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        OutlinedButton(
+                          onPressed: () => widget.onNavigate(AppScreen.upload),
+                          child: const Text('Cancel'),
+                        ),
+                        const SizedBox(width: 12),
+                        GradientButton(
+                          text: 'Save Settings',
+                          icon: Icons.check_rounded,
+                          onPressed: _saveSettings,
+                        ),
+                      ],
+                    ),
                 ],
               ),
             ),

@@ -122,181 +122,216 @@ class _AiChatScreenState extends State<AiChatScreen> {
     final origWords = _countWords(_inputController.text);
     final newWords = _countWords(_paraphrasedOutput);
     final accentGreen = AppColors.accentGreen(context);
+    final isMobile = Responsive.isMobile(context);
 
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      body: Padding(
-        padding: const EdgeInsets.all(28),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Left Panel: Input & Controls
-            Expanded(
-              flex: 6,
-              child: GlassCard(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+    final inputCard = GlassCard(
+      padding: EdgeInsets.all(isMobile ? 16 : 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'AI Paraphraser & Rewriter',
+                style: TextStyle(
+                  color: AppColors.textPrimary(context),
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: AppColors.accentPurple(context).withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(AppRadius.pill),
+                  border: Border.all(color: AppColors.accentPurple(context).withValues(alpha: 0.4)),
+                ),
+                child: Text(
+                  'Groq Llama 3.1',
+                  style: TextStyle(
+                    color: AppColors.accentPurple(context),
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          TextField(
+            controller: _inputController,
+            maxLines: isMobile ? 6 : 10,
+            minLines: isMobile ? 5 : 8,
+            textAlignVertical: TextAlignVertical.top,
+            onChanged: (_) => setState(() {}),
+            style: TextStyle(color: AppColors.textPrimary(context), fontSize: 13, height: 1.6),
+            decoration: const InputDecoration(
+              hintText: 'Paste sentence, paragraph, or raw text to rewrite without plagiarism...',
+              alignLabelWithHint: true,
+            ),
+          ),
+          const SizedBox(height: 16),
+          if (isMobile)
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Row(
                   children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'AI Paraphraser & Rewriter',
-                          style: TextStyle(
-                            color: AppColors.textPrimary(context),
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: AppColors.accentPurple(context).withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(AppRadius.pill),
-                            border: Border.all(color: AppColors.accentPurple(context).withValues(alpha: 0.4)),
-                          ),
-                          child: Text(
-                            'Groq Llama 3.1',
-                            style: TextStyle(
-                              color: AppColors.accentPurple(context),
-                              fontSize: 11,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
+                    Icon(Icons.tune_rounded, size: 16, color: AppColors.textSecondary(context)),
+                    const SizedBox(width: 8),
+                    Text('Tone: ',
+                        style: TextStyle(color: AppColors.textSecondary(context), fontSize: 12)),
+                    DropdownButton<String>(
+                      value: _selectedTone,
+                      dropdownColor: AppColors.surfaceElevated(context),
+                      underline: const SizedBox.shrink(),
+                      style: TextStyle(color: accentGreen, fontSize: 12, fontWeight: FontWeight.bold),
+                      items: const [
+                        DropdownMenuItem(value: 'academic', child: Text('Academic & Scholarly')),
+                        DropdownMenuItem(value: 'standard', child: Text('Standard')),
+                        DropdownMenuItem(value: 'creative', child: Text('Creative')),
                       ],
-                    ),
-                    const SizedBox(height: 16),
-                    Expanded(
-                      child: TextField(
-                        controller: _inputController,
-                        maxLines: null,
-                        expands: true,
-                        textAlignVertical: TextAlignVertical.top,
-                        onChanged: (_) => setState(() {}),
-                        style: TextStyle(color: AppColors.textPrimary(context), fontSize: 13, height: 1.6),
-                        decoration: const InputDecoration(
-                          hintText: 'Paste sentence, paragraph, or raw text to rewrite without plagiarism...',
-                          alignLabelWithHint: true,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Row(
-                          children: [
-                            Icon(Icons.tune_rounded, size: 16, color: AppColors.textSecondary(context)),
-                            const SizedBox(width: 8),
-                            Text('Tone: ',
-                                style: TextStyle(color: AppColors.textSecondary(context), fontSize: 12)),
-                            DropdownButton<String>(
-                              value: _selectedTone,
-                              dropdownColor: AppColors.surfaceElevated(context),
-                              underline: const SizedBox.shrink(),
-                              style: TextStyle(color: accentGreen, fontSize: 12, fontWeight: FontWeight.bold),
-                              items: const [
-                                DropdownMenuItem(value: 'academic', child: Text('Academic & Scholarly')),
-                                DropdownMenuItem(value: 'standard', child: Text('Standard')),
-                                DropdownMenuItem(value: 'creative', child: Text('Creative')),
-                              ],
-                              onChanged: (val) {
-                                if (val != null) setState(() => _selectedTone = val);
-                              },
-                            ),
-                          ],
-                        ),
-                        GradientButton(
-                          text: _isGenerating ? 'Paraphrasing...' : 'Paraphrase Text',
-                          icon: Icons.auto_awesome_rounded,
-                          isLoading: _isGenerating,
-                          onPressed: _runParaphrase,
-                        ),
-                      ],
+                      onChanged: (val) {
+                        if (val != null) setState(() => _selectedTone = val);
+                      },
                     ),
                   ],
                 ),
-              ),
+                const SizedBox(height: 12),
+                GradientButton(
+                  text: _isGenerating ? 'Paraphrasing...' : 'Paraphrase Text',
+                  icon: Icons.auto_awesome_rounded,
+                  isLoading: _isGenerating,
+                  onPressed: _runParaphrase,
+                ),
+              ],
+            )
+          else
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    Icon(Icons.tune_rounded, size: 16, color: AppColors.textSecondary(context)),
+                    const SizedBox(width: 8),
+                    Text('Tone: ',
+                        style: TextStyle(color: AppColors.textSecondary(context), fontSize: 12)),
+                    DropdownButton<String>(
+                      value: _selectedTone,
+                      dropdownColor: AppColors.surfaceElevated(context),
+                      underline: const SizedBox.shrink(),
+                      style: TextStyle(color: accentGreen, fontSize: 12, fontWeight: FontWeight.bold),
+                      items: const [
+                        DropdownMenuItem(value: 'academic', child: Text('Academic & Scholarly')),
+                        DropdownMenuItem(value: 'standard', child: Text('Standard')),
+                        DropdownMenuItem(value: 'creative', child: Text('Creative')),
+                      ],
+                      onChanged: (val) {
+                        if (val != null) setState(() => _selectedTone = val);
+                      },
+                    ),
+                  ],
+                ),
+                GradientButton(
+                  text: _isGenerating ? 'Paraphrasing...' : 'Paraphrase Text',
+                  icon: Icons.auto_awesome_rounded,
+                  isLoading: _isGenerating,
+                  onPressed: _runParaphrase,
+                ),
+              ],
             ),
-            const SizedBox(width: 24),
+        ],
+      ),
+    );
 
-            // Right Panel: Output & Stats
-            Expanded(
-              flex: 5,
-              child: Column(
+    final outputCard = Column(
+      children: [
+        GlassCard(
+          padding: EdgeInsets.all(isMobile ? 16 : 24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Expanded(
-                    child: GlassCard(
-                      padding: const EdgeInsets.all(24),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                'Paraphrased Output',
-                                style: TextStyle(
-                                  color: AppColors.textPrimary(context),
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              OutlinedButton.icon(
-                                onPressed: _paraphrasedOutput.isEmpty ? null : _copyOutput,
-                                icon: const Icon(Icons.copy_rounded, size: 14),
-                                label: const Text('Copy'),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 14),
-                          const Divider(color: Color(0xFF252545)),
-                          const SizedBox(height: 14),
-                          Expanded(
-                            child: SingleChildScrollView(
-                              child: _paraphrasedOutput.isEmpty
-                                  ? const Center(
-                                      child: Padding(
-                                        padding: EdgeInsets.all(40),
-                                        child: Text(
-                                          'Rewritten text will stream live here...',
-                                          style: TextStyle(color: Color(0xFF8888BB), fontSize: 12),
-                                        ),
-                                      ),
-                                    )
-                                  : SelectableText(
-                                      _paraphrasedOutput,
-                                      style: TextStyle(
-                                        color: AppColors.textPrimary(context),
-                                        fontSize: 13,
-                                        height: 1.7,
-                                      ),
-                                    ),
-                            ),
-                          ),
-                        ],
-                      ),
+                  Text(
+                    'Paraphrased Output',
+                    style: TextStyle(
+                      color: AppColors.textPrimary(context),
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
-                  const SizedBox(height: 16),
-
-                  GlassCard(
-                    padding: const EdgeInsets.all(16),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        _statBox(context, 'Original Words', '$origWords'),
-                        _statBox(context, 'Paraphrased Words', '$newWords'),
-                      ],
-                    ),
+                  OutlinedButton.icon(
+                    onPressed: _paraphrasedOutput.isEmpty ? null : _copyOutput,
+                    icon: const Icon(Icons.copy_rounded, size: 14),
+                    label: const Text('Copy'),
                   ),
                 ],
               ),
-            ),
-          ],
+              const SizedBox(height: 14),
+              const Divider(color: Color(0xFF252545)),
+              const SizedBox(height: 14),
+              Container(
+                constraints: BoxConstraints(minHeight: isMobile ? 140 : 200),
+                child: _paraphrasedOutput.isEmpty
+                    ? const Center(
+                        child: Padding(
+                          padding: EdgeInsets.all(32),
+                          child: Text(
+                            'Rewritten text will stream live here...',
+                            style: TextStyle(color: Color(0xFF8888BB), fontSize: 12),
+                          ),
+                        ),
+                      )
+                    : SelectableText(
+                        _paraphrasedOutput,
+                        style: TextStyle(
+                          color: AppColors.textPrimary(context),
+                          fontSize: 13,
+                          height: 1.7,
+                        ),
+                      ),
+              ),
+            ],
+          ),
         ),
+        const SizedBox(height: 16),
+        GlassCard(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _statBox(context, 'Original Words', '$origWords'),
+              _statBox(context, 'Paraphrased Words', '$newWords'),
+            ],
+          ),
+        ),
+      ],
+    );
+
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      body: SingleChildScrollView(
+        padding: EdgeInsets.all(isMobile ? 16 : 28),
+        child: isMobile
+            ? Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  inputCard,
+                  const SizedBox(height: 20),
+                  outputCard,
+                ],
+              )
+            : Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(flex: 6, child: inputCard),
+                  const SizedBox(width: 24),
+                  Expanded(flex: 5, child: outputCard),
+                ],
+              ),
       ),
     );
   }

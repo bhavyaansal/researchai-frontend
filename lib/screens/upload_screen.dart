@@ -203,7 +203,7 @@ class _UploadScreenState extends State<UploadScreen> with SingleTickerProviderSt
     final dateStr = '${weekdays[now.weekday - 1]}, ${months[now.month - 1]} ${now.day}, ${now.year}';
     final accentGreen = AppColors.accentGreen(context);
 
-    final isMobile = MediaQuery.of(context).size.width < 800;
+    final isMobile = Responsive.isMobile(context);
 
     final greetingColumn = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -446,17 +446,31 @@ class _UploadScreenState extends State<UploadScreen> with SingleTickerProviderSt
           const SizedBox(height: 24),
 
           // Action Button
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              GradientButton(
-                text: 'Analyze Document',
-                icon: Icons.arrow_forward_rounded,
-                isLoading: _isSubmitting,
-                onPressed: _handleAnalyze,
-              ),
-            ],
-          ),
+          if (isMobile)
+            Row(
+              children: [
+                Expanded(
+                  child: GradientButton(
+                    text: 'Analyze Document',
+                    icon: Icons.arrow_forward_rounded,
+                    isLoading: _isSubmitting,
+                    onPressed: _handleAnalyze,
+                  ),
+                ),
+              ],
+            )
+          else
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                GradientButton(
+                  text: 'Analyze Document',
+                  icon: Icons.arrow_forward_rounded,
+                  isLoading: _isSubmitting,
+                  onPressed: _handleAnalyze,
+                ),
+              ],
+            ),
         ],
       ),
     );

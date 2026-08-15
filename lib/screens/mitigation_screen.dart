@@ -161,7 +161,7 @@ class _MitigationScreenState extends State<MitigationScreen> {
     final accentGreen = AppColors.accentGreen(context);
     final accentRed = AppColors.accentRed(context);
 
-    final isMobile = MediaQuery.of(context).size.width < 800;
+    final isMobile = Responsive.isMobile(context);
 
     final leftOriginalCard = GlassCard(
       borderColor: accentRed.withValues(alpha: 0.5),
@@ -445,31 +445,59 @@ class _MitigationScreenState extends State<MitigationScreen> {
             const SizedBox(height: 32),
 
             // Bottom Actions Bar
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                OutlinedButton.icon(
-                  onPressed: () {
-                    setState(() => _isPaused = !_isPaused);
-                    CustomToast.show(
-                      context,
-                      title: _isPaused ? 'Engine Paused' : 'Engine Resumed',
-                      message: _isPaused
-                          ? 'Mitigation queue paused.'
-                          : 'Resuming iterative segment rewrites.',
-                      type: ToastType.info,
-                    );
-                  },
-                  icon: Icon(_isPaused ? Icons.play_arrow_rounded : Icons.pause_rounded, size: 18),
-                  label: Text(_isPaused ? 'Resume' : 'Pause'),
-                ),
-                GradientButton(
-                  text: 'Accept All & Finalize',
-                  icon: Icons.task_alt_rounded,
-                  onPressed: _finalizeAll,
-                ),
-              ],
-            ),
+            if (isMobile)
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  GradientButton(
+                    text: 'Accept All & Finalize',
+                    icon: Icons.task_alt_rounded,
+                    onPressed: _finalizeAll,
+                  ),
+                  const SizedBox(height: 12),
+                  OutlinedButton.icon(
+                    onPressed: () {
+                      setState(() => _isPaused = !_isPaused);
+                      CustomToast.show(
+                        context,
+                        title: _isPaused ? 'Engine Paused' : 'Engine Resumed',
+                        message: _isPaused
+                            ? 'Mitigation queue paused.'
+                            : 'Resuming iterative segment rewrites.',
+                        type: ToastType.info,
+                      );
+                    },
+                    icon: Icon(_isPaused ? Icons.play_arrow_rounded : Icons.pause_rounded, size: 18),
+                    label: Text(_isPaused ? 'Resume' : 'Pause'),
+                  ),
+                ],
+              )
+            else
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  OutlinedButton.icon(
+                    onPressed: () {
+                      setState(() => _isPaused = !_isPaused);
+                      CustomToast.show(
+                        context,
+                        title: _isPaused ? 'Engine Paused' : 'Engine Resumed',
+                        message: _isPaused
+                            ? 'Mitigation queue paused.'
+                            : 'Resuming iterative segment rewrites.',
+                        type: ToastType.info,
+                      );
+                    },
+                    icon: Icon(_isPaused ? Icons.play_arrow_rounded : Icons.pause_rounded, size: 18),
+                    label: Text(_isPaused ? 'Resume' : 'Pause'),
+                  ),
+                  GradientButton(
+                    text: 'Accept All & Finalize',
+                    icon: Icons.task_alt_rounded,
+                    onPressed: _finalizeAll,
+                  ),
+                ],
+              ),
           ],
         ),
       ),

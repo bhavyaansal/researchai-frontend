@@ -8,42 +8,63 @@ class LemmaFooter extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isMobile = Responsive.isMobile(context);
+
     return Container(
       height: 32,
-      padding: const EdgeInsets.symmetric(horizontal: 20),
+      padding: EdgeInsets.symmetric(horizontal: isMobile ? 12 : 20),
       decoration: BoxDecoration(
         color: AppColors.bgDeep(context),
         border: Border(top: BorderSide(color: AppColors.borderSubtle(context), width: 1)),
       ),
-      child: Row(
-        children: [
-          _statusItem(
-            context,
-            label: 'ResearchAI Engine (v2.4)',
-            isOnline: isBackendOnline,
-          ),
-          const SizedBox(width: 24),
-          _statusItem(
-            context,
-            label: 'ChromaDB Vector Store',
-            isOnline: isBackendOnline,
-          ),
-          const SizedBox(width: 24),
-          _statusItem(
-            context,
-            label: 'FastAPI Service',
-            isOnline: isBackendOnline,
-          ),
-          const Spacer(),
-          Text(
-            'Press Ctrl+K for command palette',
-            style: TextStyle(
-              color: AppColors.textTertiary(context),
-              fontSize: 10,
+      child: isMobile
+          ? Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _statusItem(
+                  context,
+                  label: 'ResearchAI Engine',
+                  isOnline: isBackendOnline,
+                ),
+                Text(
+                  'Groq • ChromaDB',
+                  style: TextStyle(
+                    color: AppColors.textTertiary(context),
+                    fontSize: 10,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            )
+          : Row(
+              children: [
+                _statusItem(
+                  context,
+                  label: 'ResearchAI Engine (v2.4)',
+                  isOnline: isBackendOnline,
+                ),
+                const SizedBox(width: 24),
+                _statusItem(
+                  context,
+                  label: 'ChromaDB Vector Store',
+                  isOnline: isBackendOnline,
+                ),
+                const SizedBox(width: 24),
+                _statusItem(
+                  context,
+                  label: 'FastAPI Service',
+                  isOnline: isBackendOnline,
+                ),
+                const Spacer(),
+                Text(
+                  'Press Ctrl+K for command palette',
+                  style: TextStyle(
+                    color: AppColors.textTertiary(context),
+                    fontSize: 10,
+                  ),
+                ),
+              ],
             ),
-          ),
-        ],
-      ),
     );
   }
 

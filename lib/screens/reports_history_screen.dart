@@ -246,10 +246,12 @@ class _ReportsHistoryScreenState extends State<ReportsHistoryScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isMobile = Responsive.isMobile(context);
+
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(32),
+        padding: EdgeInsets.all(isMobile ? 16 : 32),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -399,114 +401,236 @@ class _ReportsHistoryScreenState extends State<ReportsHistoryScreen> {
                   final dateStr = '${months[dt.month - 1]} ${dt.day}, ${dt.year} • $hour:${dt.minute.toString().padLeft(2, '0')} $ampm';
 
                   return GlassCard(
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                    child: Row(
-                      children: [
-                        // Left Colored Indicator Bar
-                        Container(
-                          width: 4,
-                          height: 48,
-                          decoration: BoxDecoration(
-                            color: leftBarColor,
-                            borderRadius: BorderRadius.circular(2),
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        // File Icon
-                        Container(
-                          padding: const EdgeInsets.all(10),
-                          decoration: BoxDecoration(
-                            color: AppColors.surfaceElevated(context),
-                            borderRadius: BorderRadius.circular(AppRadius.md),
-                          ),
-                          child: Icon(
-                            Icons.description_rounded,
-                            color: AppColors.accentBlue(context),
-                            size: 24,
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        // Filename & Date
-                        Expanded(
-                          child: Column(
+                    padding: EdgeInsets.symmetric(horizontal: isMobile ? 14 : 20, vertical: isMobile ? 14 : 16),
+                    child: isMobile
+                        ? Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
-                                job.filename,
-                                style: TextStyle(
-                                  color: AppColors.textPrimary(context),
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.bold,
-                                ),
+                              Row(
+                                children: [
+                                  Container(
+                                    width: 4,
+                                    height: 36,
+                                    decoration: BoxDecoration(
+                                      color: leftBarColor,
+                                      borderRadius: BorderRadius.circular(2),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 10),
+                                  Container(
+                                    padding: const EdgeInsets.all(8),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.surfaceElevated(context),
+                                      borderRadius: BorderRadius.circular(AppRadius.md),
+                                    ),
+                                    child: Icon(
+                                      Icons.description_rounded,
+                                      color: AppColors.accentBlue(context),
+                                      size: 20,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          job.filename,
+                                          style: TextStyle(
+                                            color: AppColors.textPrimary(context),
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        const SizedBox(height: 2),
+                                        Text(
+                                          dateStr,
+                                          style: TextStyle(
+                                            color: AppColors.textSecondary(context),
+                                            fontSize: 11,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
                               ),
-                              const SizedBox(height: 4),
-                              Text(
-                                dateStr,
-                                style: TextStyle(
-                                  color: AppColors.textSecondary(context),
-                                  fontSize: 12,
-                                ),
+                              const SizedBox(height: 12),
+                              Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                    decoration: BoxDecoration(
+                                      color: leftBarColor.withValues(alpha: 0.15),
+                                      borderRadius: BorderRadius.circular(AppRadius.pill),
+                                      border: Border.all(color: leftBarColor.withValues(alpha: 0.4)),
+                                    ),
+                                    child: Text(
+                                      '${score.toInt()}% Similarity',
+                                      style: TextStyle(
+                                        color: leftBarColor,
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                  if (score > 10) ...[
+                                    const SizedBox(width: 8),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.accentGreen(context).withValues(alpha: 0.15),
+                                        borderRadius: BorderRadius.circular(AppRadius.pill),
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          Icon(Icons.arrow_downward_rounded,
+                                              size: 11, color: AppColors.accentGreen(context)),
+                                          const SizedBox(width: 2),
+                                          Text(
+                                            '↓ from 45%',
+                                            style: TextStyle(
+                                              color: AppColors.accentGreen(context),
+                                              fontSize: 10,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ],
+                              ),
+                              const SizedBox(height: 12),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: OutlinedButton(
+                                      onPressed: () => widget.onViewReport(job.id),
+                                      child: const Text('View'),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: GradientButton(
+                                      text: 'Download',
+                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                      onPressed: () => _showDownloadModal(job),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ],
-                          ),
-                        ),
-                        // Similarity Score Badge
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: leftBarColor.withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(AppRadius.pill),
-                            border: Border.all(color: leftBarColor.withValues(alpha: 0.4)),
-                          ),
-                          child: Text(
-                            '${score.toInt()}% Similarity',
-                            style: TextStyle(
-                              color: leftBarColor,
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        // Score History Badge
-                        if (score > 10)
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: AppColors.accentGreen(context).withValues(alpha: 0.15),
-                              borderRadius: BorderRadius.circular(AppRadius.pill),
-                            ),
-                            child: Row(
-                              children: [
-                                Icon(Icons.arrow_downward_rounded,
-                                    size: 12, color: AppColors.accentGreen(context)),
-                                const SizedBox(width: 2),
-                                Text(
-                                  '↓ from 45%',
+                          )
+                        : Row(
+                            children: [
+                              // Left Colored Indicator Bar
+                              Container(
+                                width: 4,
+                                height: 48,
+                                decoration: BoxDecoration(
+                                  color: leftBarColor,
+                                  borderRadius: BorderRadius.circular(2),
+                                ),
+                              ),
+                              const SizedBox(width: 16),
+                              // File Icon
+                              Container(
+                                padding: const EdgeInsets.all(10),
+                                decoration: BoxDecoration(
+                                  color: AppColors.surfaceElevated(context),
+                                  borderRadius: BorderRadius.circular(AppRadius.md),
+                                ),
+                                child: Icon(
+                                  Icons.description_rounded,
+                                  color: AppColors.accentBlue(context),
+                                  size: 24,
+                                ),
+                              ),
+                              const SizedBox(width: 16),
+                              // Filename & Date
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      job.filename,
+                                      style: TextStyle(
+                                        color: AppColors.textPrimary(context),
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      dateStr,
+                                      style: TextStyle(
+                                        color: AppColors.textSecondary(context),
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              // Similarity Score Badge
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: leftBarColor.withValues(alpha: 0.15),
+                                  borderRadius: BorderRadius.circular(AppRadius.pill),
+                                  border: Border.all(color: leftBarColor.withValues(alpha: 0.4)),
+                                ),
+                                child: Text(
+                                  '${score.toInt()}% Similarity',
                                   style: TextStyle(
-                                    color: AppColors.accentGreen(context),
-                                    fontSize: 11,
+                                    color: leftBarColor,
+                                    fontSize: 12,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
-                              ],
-                            ),
-                          ),
-                        const SizedBox(width: 16),
+                              ),
+                              const SizedBox(width: 12),
+                              // Score History Badge
+                              if (score > 10)
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.accentGreen(context).withValues(alpha: 0.15),
+                                    borderRadius: BorderRadius.circular(AppRadius.pill),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Icon(Icons.arrow_downward_rounded,
+                                          size: 12, color: AppColors.accentGreen(context)),
+                                      const SizedBox(width: 2),
+                                      Text(
+                                        '↓ from 45%',
+                                        style: TextStyle(
+                                          color: AppColors.accentGreen(context),
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              const SizedBox(width: 16),
 
-                        // Actions
-                        OutlinedButton(
-                          onPressed: () => widget.onViewReport(job.id),
-                          child: const Text('View'),
-                        ),
-                        const SizedBox(width: 8),
-                        GradientButton(
-                          text: 'Download ▼',
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                          onPressed: () => _showDownloadModal(job),
-                        ),
-                      ],
-                    ),
+                              // Actions
+                              OutlinedButton(
+                                onPressed: () => widget.onViewReport(job.id),
+                                child: const Text('View'),
+                              ),
+                              const SizedBox(width: 8),
+                              GradientButton(
+                                text: 'Download ▼',
+                                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                                onPressed: () => _showDownloadModal(job),
+                              ),
+                            ],
+                          ),
                   );
                 },
               ),
