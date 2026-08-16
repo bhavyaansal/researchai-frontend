@@ -14,6 +14,7 @@ class AuthService {
   String? _userEmail;
 
   bool get isLoggedIn => _token != null;
+  bool get isGuest => _token == '__guest__';
   String get token => _token ?? '';
   String? get userEmail => _userEmail;
 
@@ -41,6 +42,12 @@ class AuthService {
     } on DioException catch (e) {
       throw Exception(_extractError(e, 'Signup failed'));
     }
+  }
+
+  /// Skips API login and creates a guest session in memory.
+  void loginAsGuest() {
+    _token = '__guest__';
+    _userEmail = 'Guest';
   }
 
   void logout() {

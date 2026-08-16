@@ -9,12 +9,14 @@ class LoginScreen extends StatefulWidget {
   final AuthService authService;
   final VoidCallback onLoginSuccess;
   final VoidCallback onGoToSignup;
+  final VoidCallback? onGuestAccess;
 
   const LoginScreen({
     super.key,
     required this.authService,
     required this.onLoginSuccess,
     required this.onGoToSignup,
+    this.onGuestAccess,
   });
 
   @override
@@ -158,6 +160,49 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         ],
                       ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  // Guest access divider
+                  Row(
+                    children: [
+                      Expanded(child: Divider(color: AppColors.borderSubtle(context), thickness: 1)),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        child: Text(
+                          'or',
+                          style: TextStyle(
+                            color: AppColors.textTertiary(context),
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+                      Expanded(child: Divider(color: AppColors.borderSubtle(context), thickness: 1)),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  GestureDetector(
+                    onTap: widget.onGuestAccess,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.person_outline_rounded,
+                          size: 15,
+                          color: AppColors.textSecondary(context),
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          'Continue as Guest',
+                          style: TextStyle(
+                            color: AppColors.textSecondary(context),
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                            decoration: TextDecoration.underline,
+                            decorationColor: AppColors.textSecondary(context),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],

@@ -83,6 +83,10 @@ class _AuthGateState extends State<AuthGate> {
           authService: _authService,
           onLoginSuccess: () => setState(() {}),
           onGoToSignup: () => setState(() => _showLogin = false),
+          onGuestAccess: () {
+            _authService.loginAsGuest();
+            setState(() {});
+          },
         );
       } else {
         return SignupScreen(
