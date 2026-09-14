@@ -1,6 +1,7 @@
 // ignore_for_file: avoid_web_libraries_in_flutter, deprecated_member_use
 import 'dart:html' as html;
 import 'dart:convert';
+import 'dart:typed_data';
 
 Future<void> saveFile(String filename, String content) async {
   final bytes = utf8.encode(content);
@@ -12,3 +13,11 @@ Future<void> saveFile(String filename, String content) async {
   html.Url.revokeObjectUrl(url);
 }
 
+Future<void> saveBytes(String filename, Uint8List bytes) async {
+  final blob = html.Blob([bytes]);
+  final url = html.Url.createObjectUrlFromBlob(blob);
+  html.AnchorElement(href: url)
+    ..setAttribute("download", filename)
+    ..click();
+  html.Url.revokeObjectUrl(url);
+}

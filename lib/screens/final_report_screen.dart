@@ -260,11 +260,11 @@ class FinalReportScreen extends StatelessWidget {
                           icon: Icons.file_download_rounded,
                           onPressed: () async {
                             try {
-                              final content = await apiService.downloadRewrittenFile(report.jobId);
-                              await DownloadHelper.downloadFile(
-                                '${report.filename}_polished.txt',
-                                content,
-                              );
+                              final bytes = await apiService.downloadRewrittenFile(report.jobId);
+                              await DownloadHelper.downloadBytes(
+                                '${report.filename}_polished.pdf',
+                                bytes,
+                                );
                               if (context.mounted) {
                                 CustomToast.show(
                                   context,
@@ -379,10 +379,10 @@ class FinalReportScreen extends StatelessWidget {
                           icon: Icons.file_download_rounded,
                           onPressed: () async {
                             try {
-                              final content = await apiService.downloadRewrittenFile(report.jobId);
-                              await DownloadHelper.downloadFile(
-                                '${report.filename}_polished.txt',
-                                content,
+                              final bytes = await apiService.downloadRewrittenFile(report.jobId);
+                              await DownloadHelper.downloadBytes(
+                                '${report.filename}_polished.pdf',
+                                bytes,
                               );
                               if (context.mounted) {
                                 CustomToast.show(

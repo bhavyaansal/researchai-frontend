@@ -13,4 +13,8 @@ class DownloadHelper {
     await helper.saveFile(filename, content);
     return kIsWeb ? filename : filename;
   }
+
+  static Future<void> downloadBytes(String filename, Uint8List bytes) async {
+    await helper.saveBytes(filename, bytes);
+  }
 }

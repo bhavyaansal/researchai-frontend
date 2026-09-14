@@ -14,3 +14,14 @@ Future<void> saveFile(String filename, String content) async {
   }
 }
 
+Future<void> saveBytes(String filename, Uint8List bytes) async {
+  try {
+    final directory = await getDownloadsDirectory()
+        ?? await getApplicationDocumentsDirectory();
+    final file = File('${directory.path}/$filename');
+    await file.writeAsBytes(bytes, flush: true);
+    debugPrint('File saved to ${file.path}');
+  } catch (e) {
+    debugPrint('Failed to save file locally: $e');
+  }
+}

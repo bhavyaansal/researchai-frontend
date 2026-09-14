@@ -145,26 +145,26 @@ class _ReportsHistoryScreenState extends State<ReportsHistoryScreen> {
                 // Choice 2: Polished Document
                 _buildDownloadChoiceCard(
                   context,
-                  title: 'Polished Document (.txt)',
+                  title: 'Polished Document (.pdf)', // Updated extension label
                   description: 'Clean rewritten version verified with 0% similarity.',
                   icon: Icons.task_alt_rounded,
                   iconColor: AppColors.accentGreen(context),
                   onTap: () async {
                     Navigator.pop(context);
                     try {
-                      final content = await widget.apiService.downloadRewrittenFile(job.id);
-                      await DownloadHelper.downloadFile(
-                        '${job.filename}_rewritten.txt',
-                        content,
-                      );
+                      final bytes = await widget.apiService.downloadRewrittenFile(job.id);
+                      await DownloadHelper.downloadBytes(
+                        '${job.filename}_rewritten.pdf',
+                        bytes,
+                        );
                       if (context.mounted) {
                         CustomToast.show(
                           context,
                           title: 'Document Downloaded',
                           message: 'Polished document saved successfully.',
                           type: ToastType.success,
-                        );
-                      }
+                          );
+                          }
                     } catch (e) {
                       if (context.mounted) {
                         CustomToast.show(

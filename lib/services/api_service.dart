@@ -124,20 +124,20 @@ class ApiService {
     }
   }
 
-  Future<String> downloadReportFile(String jobId) async {
+    Future<String> downloadReportFile(String jobId) async {
     final response = await _dio.get(
-      '/report/$jobId/download/report',
+      '/download/report/$jobId',
       options: Options(responseType: ResponseType.plain),
     );
     return response.data.toString();
   }
 
-  Future<String> downloadRewrittenFile(String jobId) async {
+  Future<Uint8List> downloadRewrittenFile(String jobId) async {
     final response = await _dio.get(
-      '/report/$jobId/download/rewritten',
-      options: Options(responseType: ResponseType.plain),
+      '/download/rewritten/$jobId',
+      options: Options(responseType: ResponseType.bytes),
     );
-    return response.data.toString();
+    return Uint8List.fromList(response.data);
   }
 
   Future<Map<String, dynamic>> getCurrentUser() async {
