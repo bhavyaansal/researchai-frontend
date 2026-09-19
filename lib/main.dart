@@ -145,10 +145,18 @@ class _AppShellState extends State<AppShell> {
   void initState() {
     super.initState();
 
-    debugPrint('AUTH TOKEN LENGTH: ${widget.authService.token.length}');
-    debugPrint('IS LOGGED IN: ${widget.authService.isLoggedIn}');
-
     _api = ApiService(widget.authService.token);
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Token length: ${widget.authService.token.length} | '
+            'Logged in: ${widget.authService.isLoggedIn}',
+          ),
+        ),
+     );
+    });
   }
 
   @override
