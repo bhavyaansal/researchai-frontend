@@ -145,10 +145,8 @@ class _AppShellState extends State<AppShell> {
   void initState() {
     super.initState();
 
-    // ignore: avoid_print
-    print('AUTH TOKEN LENGTH: ${widget.authService.token.length}');
-    // ignore: avoid_print
-    print('IS LOGGED IN: ${widget.authService.isLoggedIn}');
+    debugPrint('AUTH TOKEN LENGTH: ${widget.authService.token.length}');
+    debugPrint('IS LOGGED IN: ${widget.authService.isLoggedIn}');
 
     _api = ApiService(widget.authService.token);
   }
