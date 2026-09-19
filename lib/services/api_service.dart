@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:typed_data';
 import 'package:dio/dio.dart';
 import '../models/job_model.dart';
+import 'package:flutter/foundation.dart';
 
 /// Handles all authenticated calls to the FastAPI backend.
 ///
@@ -15,10 +16,13 @@ class ApiService {
   late final Dio _dio;
 
   ApiService(this.token) {
+    debugPrint('API TOKEN LENGTH: ${token.length}');
+    debugPrint('API TOKEN EMPTY: ${token.isEmpty}');
+
     _dio = Dio(BaseOptions(
       baseUrl: baseUrl,
       connectTimeout: const Duration(seconds: 15),
-      receiveTimeout: const Duration(minutes: 5), // rewriting can be slow on CPU/Colab
+      receiveTimeout: const Duration(minutes: 5),
       headers: {
         'Authorization': 'Bearer $token',
       },
