@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'api_service.dart';
+import 'package:flutter/foundation.dart';
 
 /// Holds sign-in state for the session. The JWT lives in memory only
 /// (no persistence) — the user re-logs in on every app restart, which
@@ -24,8 +25,15 @@ class AuthService {
         'email': email,
         'password': password,
       });
+
+      debugPrint('LOGIN RESPONSE: ${response.data}');
+
       _token = response.data['access_token'] as String;
       _userEmail = email;
+
+      debugPrint('TOKEN SAVED: ${_token != null}');
+      debugPrint('TOKEN LENGTH: ${_token?.length ?? 0}');
+
     } on DioException catch (e) {
       throw Exception(_extractError(e, 'Login failed'));
     }
