@@ -128,13 +128,13 @@ class ApiService {
     }
   }
 
-    Future<String> downloadReportFile(String jobId) async {
-    final response = await _dio.get(
-      '/download/report/$jobId',
-      options: Options(responseType: ResponseType.plain),
-    );
-    return response.data.toString();
-  }
+    Future<Uint8List> downloadReportFile(String jobId) async {
+      final response = await _dio.get(
+        '/download/report/$jobId',
+        options: Options(responseType: ResponseType.bytes),
+      );
+      return Uint8List.fromList(response.data);
+    }
 
   Future<Uint8List> downloadRewrittenFile(String jobId) async {
     final response = await _dio.get(

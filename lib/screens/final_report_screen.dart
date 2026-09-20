@@ -290,8 +290,8 @@ class FinalReportScreen extends StatelessWidget {
                           onPressed: () async {
                             try {
                               final content = await apiService.downloadReportFile(report.jobId);
-                              await DownloadHelper.downloadFile(
-                                '${report.filename}_report.txt',
+                              await DownloadHelper.downloadBytes(
+                                '${report.filename}_plagiarism_report.pdf',
                                 content,
                               );
                               if (context.mounted) {
@@ -347,8 +347,8 @@ class FinalReportScreen extends StatelessWidget {
                           onPressed: () async {
                             try {
                               final content = await apiService.downloadReportFile(report.jobId);
-                              await DownloadHelper.downloadFile(
-                                '${report.filename}_report.txt',
+                              await DownloadHelper.downloadBytes(
+                                '${report.filename}_plagiarism_report.pdf',
                                 content,
                               );
                               if (context.mounted) {
@@ -375,35 +375,29 @@ class FinalReportScreen extends StatelessWidget {
                         ),
                         const SizedBox(width: 16),
                         GradientButton(
-                          text: 'Download Polished Document',
+                          text: 'Download Report',
                           icon: Icons.file_download_rounded,
                           onPressed: () async {
                             try {
-                              final bytes = await apiService.downloadRewrittenFile(report.jobId);
+                              final bytes = await apiService.downloadReportFile(report.jobId);
                               await DownloadHelper.downloadBytes(
-                                '${report.filename}_polished.pdf',
-                                bytes,
-                              );
-                              if (context.mounted) {
-                                CustomToast.show(
-                                  context,
-                                  title: 'Downloaded',
-                                  message: 'Polished document saved successfully.',
-                                  type: ToastType.success,
+                                '${report.filename}_plagiarism_report.pdf',   // was .txt
+                                bytes,                                        // was a String
                                 );
+                              if (context.mounted) {
+                                CustomToast.show(context,
+                                title: 'Downloaded',
+                                message: 'Plagiarism report saved successfully.',
+                                type: ToastType.success);
                               }
                             } catch (e) {
-                              if (context.mounted) {
-                                CustomToast.show(
-                                  context,
-                                  title: 'Error',
-                                  message: e.toString(),
-                                  type: ToastType.error,
-                                );
-                              }
+                            if (context.mounted) {
+                              CustomToast.show(context,
+                              title: 'Error', message: e.toString(), type: ToastType.error);
                             }
-                          },
-                        ),
+                          }
+                        },
+                      ),
                       ],
                     ),
             ),

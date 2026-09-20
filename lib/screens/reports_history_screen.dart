@@ -116,8 +116,8 @@ class _ReportsHistoryScreenState extends State<ReportsHistoryScreen> {
                     Navigator.pop(context);
                     try {
                       final content = await widget.apiService.downloadReportFile(job.id);
-                      await DownloadHelper.downloadFile(
-                        '${job.filename}_plagiarism_report.txt',
+                      await DownloadHelper.downloadBytes(
+                        '${job.filename}_plagiarism_report.pdf',
                         content,
                       );
                       if (context.mounted) {
