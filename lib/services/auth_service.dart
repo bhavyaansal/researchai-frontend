@@ -19,25 +19,29 @@ class AuthService {
   String get token => _token ?? '';
   String? get userEmail => _userEmail;
 
-  Future<void> login({required String email, required String password}) async {
-    try {
-      final response = await _dio.post('/auth/login', data: {
-        'email': email,
-        'password': password,
-      });
+  Future<void> login({
+  required String email,
+  required String password,
+}) async {
+  try {
+    final response = await _dio.post('/auth/login', data: {
+      'email': email,
+      'password': password,
+    });
 
-      debugPrint('LOGIN RESPONSE: ${response.data}');
+    debugPrint('LOGIN RESPONSE: ${response.data}');
 
-      _token = response.data['access_token'] as String;
-      _userEmail = email;
+    _token = response.data['access_token'] as String;
+    _userEmail = email;
 
-      debugPrint('TOKEN SAVED: ${_token != null}');
-      debugPrint('TOKEN LENGTH: ${_token?.length ?? 0}');
-
-    } on DioException catch (e) {
-      throw Exception(_extractError(e, 'Login failed'));
-    }
+    debugPrint('TOKEN SAVED: ${_token != null}');
+    debugPrint('TOKEN LENGTH: ${_token?.length ?? 0}');
+  } on DioException catch (e) {
+    debugPrint('LOGIN ERROR: ${e.response?.statusCode}');
+    debugPrint('ERROR RESPONSE: ${e.response?.data}');
+    throw Exception(_extractError(e, 'Login failed'));
   }
+}
 
   Future<void> signup({required String email, required String password}) async {
     try {

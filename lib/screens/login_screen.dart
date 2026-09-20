@@ -31,6 +31,8 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _obscure = true;
 
   Future<void> _submit() async {
+    debugPrint('DEBUG: _submit() called');
+    
     if (_emailController.text.trim().isEmpty || _passwordController.text.isEmpty) {
       setState(() => _error = 'Enter both email and password');
       return;
@@ -40,6 +42,7 @@ class _LoginScreenState extends State<LoginScreen> {
       _error = null;
     });
     try {
+      debugPrint('DEBUG: About to call authService.login()');
       await widget.authService.login(
         email: _emailController.text.trim(),
         password: _passwordController.text,
@@ -211,8 +214,7 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         ),
       ),
-    ),
-  );
+    )
+    );
+  }
 }
-}
-
