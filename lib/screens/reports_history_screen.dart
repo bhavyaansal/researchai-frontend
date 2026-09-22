@@ -108,7 +108,7 @@ class _ReportsHistoryScreenState extends State<ReportsHistoryScreen> {
                 // Choice 1: Plagiarism Report
                 _buildDownloadChoiceCard(
                   context,
-                  title: 'Plagiarism Report (.txt)',
+                  title: 'Plagiarism Report (.pdf)',
                   description: 'Detailed analysis log with match scores and source URLs.',
                   icon: Icons.analytics_rounded,
                   iconColor: AppColors.accentBlue(context),
