@@ -97,61 +97,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // 1. LLM Credentials
-                  GlassCard(
-                    padding: const EdgeInsets.all(24),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Icon(Icons.key_rounded, color: accentGreen, size: 20),
-                            const SizedBox(width: 10),
-                            Text(
-                              'LLM Credentials & API Keys',
-                              style: TextStyle(
-                                color: AppColors.textPrimary(context),
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-                        const Divider(color: Color(0xFF252545)),
-                        const SizedBox(height: 16),
-
-                        Text(
-                          'Groq API Key (llama-3.1-8b-instant)',
-                          style: TextStyle(
-                            color: AppColors.textSecondary(context),
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        TextField(
-                          controller: _apiKeyController,
-                          obscureText: _obscureKey,
-                          style: TextStyle(color: AppColors.textPrimary(context), fontSize: 13),
-                          decoration: InputDecoration(
-                            hintText: 'gsk_...',
-                            suffixIcon: IconButton(
-                              icon: Icon(
-                                _obscureKey ? Icons.visibility_outlined : Icons.visibility_off_outlined,
-                                size: 18,
-                                color: AppColors.textSecondary(context),
-                              ),
-                              onPressed: () => setState(() => _obscureKey = !_obscureKey),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-
-                  // 2. Detection Parameters
+                  // 1. Detection Parameters
                   GlassCard(
                     padding: const EdgeInsets.all(24),
                     child: Column(
@@ -247,7 +193,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                   const SizedBox(height: 20),
 
-                  // 3. Keyboard Shortcut Reference Cheat Sheet
+                  // 2. Keyboard Shortcut Reference Cheat Sheet
                   GlassCard(
                     padding: EdgeInsets.all(isMobile ? 16 : 24),
                     child: Column(
@@ -305,7 +251,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                   const SizedBox(height: 20),
 
-                  // 4. Diagnostics & Health Check
+                  // 3. Diagnostics & Health Check
                   GlassCard(
                     padding: EdgeInsets.all(isMobile ? 16 : 24),
                     child: Column(
