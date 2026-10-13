@@ -21,7 +21,6 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   final _apiKeyController = TextEditingController(text: 'gsk_demo_key_9837498273');
-  bool _obscureKey = true;
   double _similarityThreshold = 15.0;
   String _defaultSearchStrategy = 'hybrid';
 
