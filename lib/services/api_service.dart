@@ -13,9 +13,10 @@ class ApiService {
   static const String baseUrl = 'https://researchai-backend-75ow.onrender.com';
 
   final String token;
+  final VoidCallback? onUnauthorized;
   late final Dio _dio;
 
-  ApiService(this.token) {
+  ApiService(this.token, {this.onUnauthorized}) {
     debugPrint('API TOKEN LENGTH: ${token.length}');
     debugPrint('API TOKEN EMPTY: ${token.isEmpty}');
 
@@ -27,6 +28,17 @@ class ApiService {
         'Authorization': 'Bearer $token',
       },
     ));
+
+    _dio.interceptors.add(
+      InterceptorsWrapper(
+        onError: (DioException error, ErrorInterceptorHandler handler) {
+          if (error.response?.statusCode == 401) {
+            onUnauthorized?.call();
+          }
+          return handler.next(error);
+        },
+      ),
+    );
   }
 
   Future<JobModel> uploadDocument({

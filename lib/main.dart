@@ -145,7 +145,10 @@ class _AppShellState extends State<AppShell> {
   void initState() {
     super.initState();
 
-    _api = ApiService(widget.authService.token);
+    _api = ApiService(
+      widget.authService.token,
+      onUnauthorized: widget.onLogout,
+    );
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ScaffoldMessenger.of(context).showSnackBar(

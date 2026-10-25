@@ -6,6 +6,7 @@ import '../services/api_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/glass_card.dart';
 import '../widgets/gradient_button.dart';
+import 'package:dio/dio.dart';
 import '../widgets/custom_toast.dart';
 
 class UploadScreen extends StatefulWidget {
@@ -149,10 +150,18 @@ class _UploadScreenState extends State<UploadScreen> with SingleTickerProviderSt
         widget.onUploadSuccess(job);
       } catch (e) {
         if (mounted) {
+          String msg = e.toString().replaceFirst('Exception: ', '');
+          if (e is DioException) {
+            if (e.response?.statusCode == 401) {
+              msg = 'Session expired or invalid (401). Please log out and sign up / sign in again.';
+            } else if (e.response?.data is Map && e.response?.data['detail'] != null) {
+              msg = e.response?.data['detail']?.toString() ?? msg;
+            }
+          }
           CustomToast.show(
             context,
             title: 'Upload Failed',
-            message: e.toString(),
+            message: msg,
             type: ToastType.error,
           );
         }
@@ -179,10 +188,18 @@ class _UploadScreenState extends State<UploadScreen> with SingleTickerProviderSt
         widget.onUploadSuccess(job);
       } catch (e) {
         if (mounted) {
+          String msg = e.toString().replaceFirst('Exception: ', '');
+          if (e is DioException) {
+            if (e.response?.statusCode == 401) {
+              msg = 'Session expired or invalid (401). Please log out and sign up / sign in again.';
+            } else if (e.response?.data is Map && e.response?.data['detail'] != null) {
+              msg = e.response?.data['detail']?.toString() ?? msg;
+            }
+          }
           CustomToast.show(
             context,
             title: 'Scan Failed',
-            message: e.toString(),
+            message: msg,
             type: ToastType.error,
           );
         }
