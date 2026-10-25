@@ -30,6 +30,19 @@ class _LoginScreenState extends State<LoginScreen> {
   String? _error;
   bool _obscure = true;
 
+  @override
+  void initState() {
+    super.initState();
+    widget.authService.wakeServer(); // starts waking the backend
+  }
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
   Future<void> _submit() async {
     debugPrint('DEBUG: _submit() called');
     
@@ -39,7 +52,7 @@ class _LoginScreenState extends State<LoginScreen> {
     }
     setState(() {
       _loading = true;
-      _error = null;
+      _error = 'Connecting to server… this may take up to a minute on first use.';
     });
     try {
       debugPrint('DEBUG: About to call authService.login()');

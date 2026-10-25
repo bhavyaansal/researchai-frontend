@@ -7,8 +7,9 @@ import 'package:flutter/foundation.dart';
 /// is deliberate for now.
 class AuthService {
   final Dio _dio = Dio(BaseOptions(
-    baseUrl: ApiService.baseUrl,
-    connectTimeout: const Duration(seconds: 15),
+  baseUrl: ApiService.baseUrl,
+  connectTimeout: const Duration(seconds: 60),
+  receiveTimeout: const Duration(seconds: 60),
   ));
 
   String? _token;
@@ -19,12 +20,36 @@ class AuthService {
   String get token => _token ?? '';
   String? get userEmail => _userEmail;
 
+  /// Pings the backend so a sleeping server starts waking up.
+  /// Fire-and-forget: errors are ignored.
+  Future<void> wakeServer() async {
+    try {
+      await _dio.get('/health');
+    } catch (_) {}
+  }
+
+  /// Retries a request a few times (for cold starts).
+  Future<Response> _postWithRetry(String path, Map<String, dynamic> data,
+    {int retries = 4}) async {
+    for (var attempt = 1; ; attempt++) {
+      try {
+        return await _dio.post(path, data: data);
+      } on DioException catch (e) {
+        final isNetworkIssue = e.type == DioExceptionType.connectionError ||
+          e.type == DioExceptionType.connectionTimeout ||
+          e.type == DioExceptionType.receiveTimeout;
+        if (!isNetworkIssue || attempt >= retries) rethrow;
+       await Future.delayed(const Duration(seconds: 5));
+      }
+    }
+  }
+
   Future<void> login({
   required String email,
   required String password,
 }) async {
   try {
-    final response = await _dio.post('/auth/login', data: {
+    final response = await _postWithRetry('/auth/login', {
       'email': email,
       'password': password,
     });
@@ -45,7 +70,7 @@ class AuthService {
 
   Future<void> signup({required String email, required String password}) async {
     try {
-      final response = await _dio.post('/auth/signup', data: {
+      final response = await _postWithRetry('/auth/signup', {
         'email': email,
         'password': password,
       });
@@ -73,8 +98,9 @@ class AuthService {
       return data['detail'].toString();
     }
     if (e.type == DioExceptionType.connectionError ||
-        e.type == DioExceptionType.connectionTimeout) {
-      return 'Could not reach the server. Is the backend running on 127.0.0.1:8000?';
+      e.type == DioExceptionType.connectionTimeout ||
+      e.type == DioExceptionType.receiveTimeout) {
+      return 'The server is waking up or unreachable. Please wait a moment and try again.';
     }
     return fallback;
   }
