@@ -206,6 +206,19 @@ class _AppShellState extends State<AppShell> {
           );
         }
       }
+    }, onError: (e) {
+      setState(() => _isPolling = false);
+      if (mounted) {
+        final isAuthError = e.toString().contains('401');
+        CustomToast.show(
+          context,
+          title: isAuthError ? 'Authentication Required' : 'Scan Polling Error',
+          message: isAuthError
+              ? 'Your session has expired or the server restarted. Please sign in again.'
+              : 'Failed to check scan status: $e',
+          type: ToastType.error,
+        );
+      }
     });
   }
 

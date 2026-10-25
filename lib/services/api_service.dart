@@ -89,11 +89,15 @@ class ApiService {
         final job = await getScanStatus(jobId);
         controller.add(job);
         if (job.isDone || job.isFailed) {
-          await controller.close();
           timer?.cancel();
+          await controller.close();
         }
       } catch (e) {
-        controller.addError(e);
+        timer?.cancel();
+        if (!controller.isClosed) {
+          controller.addError(e);
+          await controller.close();
+        }
       }
     }
 
